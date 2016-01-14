@@ -1,0 +1,8 @@
+# SBT
+target/
+project/target/
+project/project/target
+# Intellij
+.idea/
+# Data files
+*.dat
