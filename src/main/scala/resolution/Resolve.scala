@@ -1,27 +1,25 @@
 package resolution
 
-import model.Index.{TravelFollow, TravelSubtree, TravelResult, TravelFailure}
+import model.Index.{TravelFailure, TravelFollow, TravelResult, TravelSubtree}
 import model._
 
 import scala.collection.mutable
+import scala.language.higherKinds
 import scala.languageFeature.higherKinds
 import scalaz._
 import scalaz.std.map._
 import scalaz.std.string._
 import scalaz.syntax.monad._
 
-private sealed trait Resolve[F[_]] {
+private sealed class Resolve[F[_]](
+                                    val mainRoot: MutablePtr,
+                                    val index: Index,
+                                    val resolveAndFetch: MutablePtr => F[Index])
+                                  (implicit val F: Monad[F]) {
   // Just a manual closure for convenience for the computation only.
   // Creation isn't free - to be created only when resolving, thus private & sealed.
 
-  def resolveAndFetch(mutablePtr: MutablePtr): F[Index]
-
-  implicit val F: Monad[F]
-
-  val mainRoot: MutablePtr
-  val index: Index
-
-  val mainIndex = toResolutionIndex(index)
+  val mainIndex = Resolve.toResolutionIndex(index)
   val forest = mutable.HashMap(mainRoot -> mainIndex)
   var errors: Vector[PathBreakageError] = Vector.empty
 
@@ -49,7 +47,7 @@ private sealed trait Resolve[F[_]] {
       F.map(resolveAndFetch(ptr)) // F[Index]
       {
         index =>
-          val freshResolvedIndex = toResolutionIndex(index)
+          val freshResolvedIndex = Resolve.toResolutionIndex(index)
           forest(ptr) = freshResolvedIndex // Add to the forest
           freshResolvedIndex
         // F.map(F.point(forest(ptr) = freshResolvedIndex)) (_ => freshResolvedIndex) // If I want to wrap all mutations in F.
@@ -121,27 +119,29 @@ private sealed trait Resolve[F[_]] {
       }
     }
   }
+}
 
+object Resolve {
 
   private def toResolutionIndex(index: Index): ResolutionIndex = index match {
     case HashLeaf(hash) => ResolutionHash(hash, seen = false)
     case FollowLeaf(remotePtr) => ResolutionFollow(remotePtr, seen = false, resolutionResult = None)
     case Folder(children) => ResolutionFolder(children.mapValues(toResolutionIndex), seen = false)
   }
-}
 
-object Resolve {
-  def resolve[F[_] : Monad](resolveAndFetch: MutablePtr => F[Index], rootIndex: RootIndex) = {
-    val resolveContext = new Resolve[F] {
-      val F: Monad[F] = Monad[F]
+  private def toIndex(resIndex: ResolutionIndex): Index = resIndex match {
+    case ResolutionHash(hash, _) => HashLeaf(hash)
+    case ResolutionFollow(remotePtr, _, _) => FollowLeaf(remotePtr)
+    case ResolutionFolder(children, _) => Folder(children.mapValues(toIndex))
+  }
 
-      def resolveAndFetch(mutablePtr: MutablePtr): F[Index] = resolveAndFetch(mutablePtr)
+  def resolve[F[_] : Monad](resolveAndFetchFunc: MutablePtr => F[Index], rootIndex: RootIndex): F[ValidationNel[ResolutionError, Map[MutablePtr, Index]]] = {
+    val resolveContext = new Resolve[F](rootIndex.ptr, rootIndex.index, resolveAndFetchFunc)
 
-      val mainRoot: MutablePtr = rootIndex.ptr
-      val index: Index = rootIndex.index
-    }
     val subtree: F[ValidationNel[ResolutionError, Unit]] =
       resolveContext.resolveSubtree(resolveContext.mainIndex, resolveContext.mainRoot)
-    subtree.map(_ => resolveContext.forest)
+
+    //      F    Validation
+    subtree.map(_.map(_ => resolveContext.forest.mapValues(toIndex).toMap))
   }
 }

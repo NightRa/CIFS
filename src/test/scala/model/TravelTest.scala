@@ -2,9 +2,8 @@ package model
 
 import hash.SHA256._
 import model.Index.{TravelFailure, TravelFollow, TravelSubtree}
-import org.scalatest.{Matchers, FreeSpec}
-
-import scala.collection.immutable.TreeMap
+import model.IndexUtils._
+import org.scalatest.{FreeSpec, Matchers}
 
 class TravelTest extends FreeSpec with Matchers {
   "travelLocal" - {
@@ -19,31 +18,31 @@ class TravelTest extends FreeSpec with Matchers {
     */
 
     // ---------------------- The Tree ----------------------------------------
-    val leaf0: Index = HashLeaf(hash("0"))
+    val leaf0 = leaf("0")
 
-    val leaf2: Index = HashLeaf(hash("2"))
+    val leaf2 = leaf("2")
 
-    val leaf4: Index = HashLeaf(hash("4"))
+    val leaf4 = leaf("4")
 
-    val folder3: Index = Folder(TreeMap(
+    val folder3 = folder(
       "5" -> leaf4
-    ))
+    )
 
     val remotePath5 = RemotePath(MutablePtr(hash("public key hash")),
       List("6", "7"))
 
     val follow5: Index = FollowLeaf(remotePath5)
 
-    val folder1: Index = Folder(TreeMap(
+    val folder1: Index = folder(
       "2" -> leaf2,
       "3" -> folder3,
       "5" -> follow5
-    ))
+    )
 
-    val root: Index = Folder(TreeMap(
+    val root: Index = folder(
       "0" -> leaf0,
       "1" -> folder1
-    ))
+    )
 
     // ---------------------- End of Tree -------------------------------------
 
