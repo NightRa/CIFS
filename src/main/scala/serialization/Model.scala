@@ -5,7 +5,7 @@ import scodec.Codec
 
 import scodec.codecs._
 
-import scala.collection.immutable.TreeMap
+import scala.collection.immutable.{SortedMap, TreeMap}
 
 object Model {
   val hashSha256Codec: Codec[Hash] = "Hash-SHA256" | bits(256).as[Hash]
@@ -13,7 +13,7 @@ object Model {
   val remotePathCodec: Codec[RemotePath] = "Remote Path" | (mutablePtrCodec :: listOfN(int32, utf8_32)).as[RemotePath]
 
   lazy val folderCodec: Codec[Folder] = "Index Folder" | listOfN(int32, utf8_32 ~ lazily(indexCodec)).
-    xmap[TreeMap[String, Index]](l => TreeMap(l: _*), _.toList).
+    xmap[SortedMap[String, Index]](l => SortedMap(l: _*), _.toList).
     as[Folder]
 
   implicit lazy val indexCodec: Codec[Index] =

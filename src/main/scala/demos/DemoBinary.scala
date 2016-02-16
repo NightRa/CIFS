@@ -1,4 +1,4 @@
-package hash
+package demos
 
 import java.nio.file.{Path, Paths}
 import java.security.MessageDigest
@@ -14,12 +14,7 @@ object DemoBinary extends App {
 
   // ------------------------ Hash Function ----------------------------------
 
-  def hash(text: String): Hash = {
-    val md = MessageDigest.getInstance("SHA-256")
-    md.update(text.getBytes("UTF-8"))
-    val digestArr = md.digest()
-    Hash(BitVector(digestArr))
-  }
+  import hash.SHA256._
 
   // ------------------------- Sample Tree -----------------------------------
 
