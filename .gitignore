@@ -2,6 +2,7 @@
 target/
 project/target/
 project/project/target
+concurrent-trees/code/target/
 # Intellij
 .idea/
 # Data files
