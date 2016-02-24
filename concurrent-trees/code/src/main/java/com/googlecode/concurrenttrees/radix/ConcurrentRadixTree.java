@@ -1097,7 +1097,7 @@ public class ConcurrentRadixTree<O> implements RadixTree<O>, PrettyPrintable, Se
         for(KeyValuePair pair: this) {
             sb.append(pair.getKey()).append(" -> ").append(pair.getValue()).append(", ");
         }
-        return sb.toString();
+        return sb.subSequence(0, sb.length() - 2).toString();
         // Trie view
         // return root.toString()
     }

@@ -1,9 +1,11 @@
 package prefixSubstitution
 
+import com.googlecode.concurrenttrees.common.KeyValuePair
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree.SearchResult
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree.SearchResult.Classification
 import com.googlecode.concurrenttrees.radix.node.concrete.SmartArrayBasedNodeFactory
+
 import scala.collection.JavaConversions._
 
 case class Rule(pattern /*x_i*/ : String, replacement /*y_i*/ : String)
@@ -48,7 +50,7 @@ object PatternTrie extends App {
 
     while (!allRules.forall(rule => isFinal(allRules, rule.getValue))) {
       val finallyApplicableRules: List[(Rule, Rule)] = allRules.toList.flatMap {
-        case (pattern, replacement) => getPrefix(finalRules, replacement).map(applicableRule => (Rule(pattern, replacement), applicableRule))
+        case KeyValuePair(pattern, replacement) => getPrefix(finalRules, replacement).map(applicableRule => (Rule(pattern, replacement), applicableRule))
       }
       if (finallyApplicableRules.isEmpty) return None
       //   applicant     applicable rule
@@ -64,5 +66,10 @@ object PatternTrie extends App {
   }
 
   println(naivePreConsistency(List(Rule("ab", "afb"), Rule("ad", "abc"))))
-  // abc -> afbc
+  // Expected: Rules: ab -> afb, ad -> afbc
+  // Explanation: abc -> afbc
+}
+
+object KeyValuePair {
+  def unapply[V](kv: KeyValuePair[V]): Option[(String, V)] = Some((kv.getKey.toString, kv.getValue))
 }
