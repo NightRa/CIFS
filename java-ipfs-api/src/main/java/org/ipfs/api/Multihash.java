@@ -33,7 +33,7 @@ public class Multihash {
     }
 
     public final Type type;
-    public final byte[] hash;
+    private final byte[] hash;
 
     public Multihash(Type type, byte[] hash) {
         if (hash.length > 127)
