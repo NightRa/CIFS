@@ -1,20 +1,22 @@
+
 package resolution
 
-import model.Index.{TravelFailure, TravelFollow, TravelResult, TravelSubtree}
+import model.IndexCompanion.{TravelFailure, TravelFollow, TravelResult, TravelSubtree}
 import model._
 
 import scala.collection.mutable
 import scala.language.higherKinds
 import scala.languageFeature.higherKinds
 import scalaz._
-import scalaz.std.map._
 import scalaz.std.string._
 import scalaz.syntax.monad._
+import scalaz.IMap._
+import scala.language.higherKinds
 
 private sealed class Resolve[F[_]](
                                     val mainRoot: MutablePtr,
-                                    val index: Index,
-                                    val resolveAndFetch: MutablePtr => F[Index])
+                                    val index: Folder,
+                                    val resolveAndFetch: MutablePtr => F[Folder])
                                   (implicit val F: Monad[F]) {
   // Just a manual closure for convenience for the computation only.
   // Creation isn't free - to be created only when resolving, thus private & sealed.
@@ -23,24 +25,12 @@ private sealed class Resolve[F[_]](
   val forest = mutable.HashMap(mainRoot -> mainIndex)
   var errors: Vector[PathBreakageError] = Vector.empty
 
-  def compose[G1[_], G2[_]](G1: Applicative[G1], G2: Applicative[G2]): Applicative[({type H[A] = G1[G2[A]]})#H] = G1.compose(G2)
-
-  type ResolutionValidation[A] = ValidationNel[ResolutionError, A]
-  type FValidation[A] = F[ResolutionValidation[A]]
-  val FValidation: Applicative[FValidation] =
-    compose[F, ResolutionValidation](
-      F, Validation.ValidationApplicative[NonEmptyList[ResolutionError]]
-    )
-
-
-  type Res = FValidation[Unit]
-
-  val success: Res = F.point(Validation.success(()))
+  val success: F[DList[ResolutionError]] = F.point(DList())
 
   // Given a pointer to a root,
   //   return it if it's already in the forest,
   //   or fetch it, and put it in the forest.
-  def getRoot(ptr: MutablePtr): F[ResolutionIndex] = {
+  def getRoot(ptr: MutablePtr): F[ResolutionFolder] = {
     if (forest.contains(ptr)) {
       F.point(forest(ptr))
     } else {
@@ -61,18 +51,18 @@ private sealed class Resolve[F[_]](
 
   // Returns either a path breakage error
   // Or the resolved index & the owner of the link or the tree???
-  def resolveFollow(remote: RemotePath): F[BreakagePath \/ (ResolutionIndex, MutablePtr)] = {
+  def resolveFollow(remote: RemotePath): F[BreakagePath \/ (ResolutionFolder, MutablePtr)] = {
     getRoot(remote.root).flatMap {
       // Gets index, puts it in the forest.
       followRoot =>
-        val travel: TravelResult[ResolutionIndex] = Index.travelLocal(followRoot, remote.path)
+        val travel: TravelResult[ResolutionFolder] = IndexCompanion.travelToLocalFolder(followRoot, remote.path)
         travel match {
-          case fail@TravelFailure(_,_) => F.point(-\/(fail.toHere)) // Invalid path => generate error in F. Here error, because it's in this tree (when we travelled here)
+          case fail@TravelFailure(_, _) => F.point(-\/(fail.toHere)) // Invalid path => generate error in F. Here error, because it's in this tree (when we travelled here)
           case TravelSubtree(tree) => // tree is either Hash or Folder.
             F.point(\/-((tree, remote.root))) // Finished resolve successfully!
 
           case TravelFollow(pathToFollow, pathFromFollow, remotePath) => // zipper: to/from follow, continueFollow: RemotePath
-            resolveFollow(remotePath).flatMap[BreakagePath \/ (ResolutionIndex, MutablePtr)] {
+            resolveFollow(remotePath).flatMap[BreakagePath \/ (ResolutionFolder, MutablePtr)] {
               case -\/(breakageFromFollow) => F.point(-\/(NotMyFault(pathToFollow, pathFromFollow, breakageFromFollow)))
               case \/-(success) => F.point(\/-(success))
             }
@@ -80,19 +70,8 @@ private sealed class Resolve[F[_]](
     }
   }
 
-
-  /*
-  * resolveSubtree(index, owner): F[ValidationNel[ResolutionError, Unit]] = {
-  *   if(index.seen){
-  *     success
-  *   } else {
-  *     index.seen = true
-  *     index match {
-  *       case Hash(_) => success
-  *       case Folder
-  **/
-
-  private def resolveSubtree(index: ResolutionIndex, owner: MutablePtr): Res = {
+  // resolveFollow for all the follows in the subtree.
+  private def resolveSubtree(index: ResolutionFolder, owner: MutablePtr): F[DList[ResolutionError]] = {
     // Don't visit a node twice
     if (index.seen) {
       success
@@ -100,48 +79,57 @@ private sealed class Resolve[F[_]](
       // Unseen
       // Mark as seen, visited
       index.seen = true
-      index match {
-        case ResolutionHash(hash, _) => success
-        case ResolutionFolder(children, _) =>
-          mapInstance.traverse_(children)(index => resolveSubtree(index, owner))(FValidation)
-        case follow@ResolutionFollow(remote, _, _) =>
-          val resolved: F[BreakagePath \/ (ResolutionIndex, MutablePtr)] =
-            resolveFollow(remote)
+      index.follows.map { follow =>
+        val resolved: F[BreakagePath \/ (ResolutionFolder, MutablePtr)] =
+          resolveFollow(follow.remotePath)
 
-          resolved.flatMap[ValidationNel[ResolutionError, Unit]] {
-            case -\/(breakagePath) =>
-              F.point(Validation.failureNel(
-                PathBreakageError(breakagePath, owner))
-              )
-            case \/-((remoteIndex, remoteRoot)) =>
-              resolveSubtree(remoteIndex, remoteRoot)
-          }
+        resolved.flatMap[DList[ResolutionError]] {
+          case -\/(breakagePath) =>
+            F.point(
+              DList(PathBreakageError(breakagePath, owner))
+            )
+          case \/-((remoteIndex, remoteRoot)) =>
+            resolveSubtree(remoteIndex, remoteRoot)
+        }
       }
+      index.folders.map(index => resolveSubtree(index, owner)).
+        fold(success)(
+          (x, v1, v2) => F.apply2(v1, v2)(_ ++ _))
+      // Applicative[F], Monoid[A] => Monoid[F[A]]
+
     }
   }
+
 }
 
 object Resolve {
 
-  private def toResolutionIndex(index: Index): ResolutionIndex = index match {
-    case HashLeaf(hash) => ResolutionHash(hash, seen = false)
-    case FollowLeaf(remotePtr) => ResolutionFollow(remotePtr, seen = false, resolutionResult = None)
-    case Folder(children) => ResolutionFolder(children.mapValues(toResolutionIndex), seen = false)
-  }
+  private def toResolutionIndex(index: Folder): ResolutionFolder =
+    ResolutionFolder(index.files, index.follows.map(toResolutionFollow), index.folders.map(toResolutionIndex), seen = false)
 
-  private def toIndex(resIndex: ResolutionIndex): Index = resIndex match {
-    case ResolutionHash(hash, _) => HashLeaf(hash)
-    case ResolutionFollow(remotePtr, _, _) => FollowLeaf(remotePtr)
-    case ResolutionFolder(children, _) => Folder(children.mapValues(toIndex))
-  }
+  private def toResolutionFollow(follow: FollowLeaf): ResolutionFollow =
+    ResolutionFollow(follow.remotePath, seen = false, resolutionResult = None)
 
-  def resolve[F[_] : Monad](resolveAndFetchFunc: MutablePtr => F[Index], rootIndex: RootIndex): F[ValidationNel[ResolutionError, Map[MutablePtr, Index]]] = {
-    val resolveContext = new Resolve[F](rootIndex.ptr, rootIndex.index, resolveAndFetchFunc)
+  private def toFollowLeaf(follow: ResolutionFollow): FollowLeaf =
+    FollowLeaf(follow.remotePath)
 
-    val subtree: F[ValidationNel[ResolutionError, Unit]] =
+  private def toIndex(resIndex: ResolutionFolder): Folder =
+    Folder(resIndex.files, resIndex.follows.map(toFollowLeaf), resIndex.folders.map(toIndex))
+
+  def resolve[F[_] : Monad](resolveAndFetchFunc: MutablePtr => F[Folder], rootIndex: RootIndex): F[ValidationNel[ResolutionError, Map[MutablePtr, Folder]]] = {
+    val resolveContext = new Resolve[F](rootIndex.ptr, rootIndex.root, resolveAndFetchFunc)
+
+    val subtree: F[DList[ResolutionError]] =
       resolveContext.resolveSubtree(resolveContext.mainIndex, resolveContext.mainRoot)
 
-    //      F    Validation
-    subtree.map(_.map(_ => resolveContext.forest.mapValues(toIndex).toMap))
+    def preprareResult(in: DList[ResolutionError]): ValidationNel[ResolutionError, Map[MutablePtr, Folder]] = {
+      val errors = in.toList
+      errors match {
+        case Nil => Validation.success(resolveContext.forest.mapValues(toIndex).toMap)
+        case err1 :: errRest => Validation.failure(NonEmptyList(err1, errRest: _*))
+      }
+    }
+
+    subtree.map(preprareResult)
   }
 }

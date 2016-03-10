@@ -1,14 +1,12 @@
 package demos
 
 import java.nio.file.{Path, Paths}
-import java.security.MessageDigest
 
+import model.IndexUtils._
 import model._
-import scodec.Attempt
-import scodec.bits.BitVector
+import scodec.{Attempt, Encoder}
 import serialization.FileIO
-
-import scala.collection.immutable.TreeMap
+import serialization.Model._
 
 object DemoBinary extends App {
 
@@ -21,26 +19,30 @@ object DemoBinary extends App {
   val remoteRoot = RemotePath(MutablePtr(hash("public key hash")),
     List("4", "5"))
 
-  val uniNotesFolder: Index = Folder(TreeMap(
-    "0" -> HashLeaf(hash("0")),
-    "1" -> Folder(TreeMap(
-      "2" -> HashLeaf(hash("2"))
-    )),
-    "3" -> FollowLeaf(remoteRoot)
-  ))
+  val uniNotesFolder: Folder = folder("0" -> hash("0"))("3" -> FollowLeaf(remoteRoot))(
+    "1" ->
+      folder("2" -> hash("2"))()()
+  )
 
-  println(serialization.Model.indexCodec.encode(uniNotesFolder).require.toHex)
+  /*
+  Folder(IMap("0" -> hash("0")),
+    IMap("1" -> Folder(IMap(
+      "2" -> hash("2")
+    ), IMap.empty, IMap.empty)),
+    IMap("3" -> FollowLeaf(remoteRoot))
+  )
+  */
+
+  println(serialization.Model.folderCodec.encode(uniNotesFolder).require.toHex)
 
   // ------------------------- Serialization ---------------------------------
 
-  import serialization.Model._
-
-  val indexFile: Path = Paths.get("index.dat")
+  val indexFile: Path = Paths.get("BinaryDemoIndex.dat")
 
   FileIO.writeBinaryFile(indexFile, uniNotesFolder).unsafePerformSync
 
   println {
-    FileIO.readBinaryFile[Index](indexFile).unsafePerformSync ==
+    FileIO.readBinaryFile[Folder](indexFile).unsafePerformSync ==
       Attempt.Successful(uniNotesFolder)
   }
 

@@ -1,45 +1,98 @@
 package model
 
 import datatypes.{Zipper, ZipperMore}
+import monocle.Lens
+import monocle.macros.{GenIso, Lenses}
+import monocle.std.imap._
 import resolution.{BreakagePath, Here}
 
-import scala.collection.immutable.SortedMap
-
-trait TreeExt[T <: TreeExt[T]] {
-  def cataExt[B](caseHash: Hash => B, caseFollow: RemotePath => B, caseFolder: SortedMap[String, T] => B, caseElse: () => B): B
-}
-
-trait Tree[T <: Tree[T]] extends TreeExt[T] {
-  def cata[B](caseHash: Hash => B, caseFollow: RemotePath => B, caseFolder: SortedMap[String, T] => B): B
-
-  def cataExt[B](caseHash: Hash => B, caseFollow: RemotePath => B, caseFolder: SortedMap[String, T] => B, caseElse: () => B): B =
-    cata(caseHash, caseFollow, caseFolder)
-}
+import scalaz.IMap
+import Folder._
+import scalaz.std.string._
 
 // --------------------------------------------------------------------
 
-sealed trait Index extends Tree[Index]
+// Index typeclass
+abstract class IndexCompanion[T] {
+  def file(fileName: String): Lens[T, Option[Hash]]
 
-case class HashLeaf(hash: Hash) extends Index {
-  def cata[B](caseHash: Hash => B, caseFollow: RemotePath => B, caseFolder: SortedMap[String, Index] => B): B =
-    caseHash(hash)
+  def folder(folderName: String): Lens[T, Option[T]]
+
+  def follow(followName: String): Lens[T, Option[FollowLeaf]]
 }
 
-case class FollowLeaf(remotePath: RemotePath) extends Index {
-  def cata[B](caseHash: Hash => B, caseFollow: RemotePath => B, caseFolder: SortedMap[String, Index] => B): B =
-    caseFollow(remotePath)
+// Just for nice syntax
+abstract class Index[T <: Index[T]](val companion: IndexCompanion[T]) {
+  self: T =>
+
+  def getFile(fileName: String): Option[Hash] =
+    companion.file(fileName).get(this)
+
+  def setFile(fileName: String, value: Option[Hash]): T =
+    companion.file(fileName).set(value)(this)
+
+  def getFolder(folderName: String): Option[T] =
+    companion.folder(folderName).get(this)
+
+  def setFolder(folderName: String, value: Option[T]): T =
+    companion.folder(folderName).set(value)(this)
+
+  def getFollow(followName: String): Option[FollowLeaf] =
+    companion.follow(followName).get(this)
+
+  def setFollow(followName: String, value: Option[FollowLeaf]): T =
+    companion.follow(followName).set(value)(this)
+
 }
 
-case class Folder(children: SortedMap[String, Index]) extends Index {
-  def cata[B](caseHash: Hash => B, caseFollow: RemotePath => B, caseFolder: SortedMap[String, Index] => B): B =
-    caseFolder(children)
+case class FollowLeaf(remotePath: RemotePath)
+
+object FollowLeaf {
+  def iso = GenIso[FollowLeaf, RemotePath]
 }
 
-case class RootIndex(index: Index, ptr: MutablePtr)
+/**
+  * Invariant: A follow may not be of the same name of another file or a folder in the same directory.
+  * Files and folders can have colliding names.
+  */
+@Lenses("_")
+case class Folder(files: IMap[String, Hash], follows: IMap[String, FollowLeaf], folders: IMap[String, Folder]) extends Index[Folder](Folder) {
+
+  // Creates the folders on the path too.
+  // overrides if exists
+  def writeFile(fileName: String, path: List[String], hash: Hash): Folder = path match {
+    case Nil =>
+      this.setFile(fileName, Some(hash))
+
+    case childFolderName :: restPath =>
+      // Folder doesn't exist, create it.
+      val childFolder = folders.lookup(childFolderName).getOrElse(emptyFolder)
+      val insertedFolder = childFolder.writeFile(fileName, restPath, hash)
+
+      this.setFolder(childFolderName, Some(insertedFolder))
+
+  }
+}
+
+object Folder extends IndexCompanion[Folder] {
+  val emptyFolder: Folder = Folder(IMap.empty, IMap.empty, IMap.empty)
+
+  def file(fileName: String): Lens[Folder, Option[Hash]] =
+    _files ^|-> atIMap[String, Hash].at(fileName)
+
+  def folder(folderName: String): Lens[Folder, Option[Folder]] =
+    _folders ^|-> atIMap[String, Folder].at(folderName)
+
+  def follow(followName: String): Lens[Folder, Option[FollowLeaf]] =
+    _follows ^|-> atIMap[String, FollowLeaf].at(followName)
+
+}
+
+case class RootIndex(root: Folder, ptr: MutablePtr)
 
 // --------------------------------------------------------------------
 
-object Index {
+object IndexCompanion {
   // Go down the given path in the given tree
   // Until:
   // 1. Invalid Path: non empty path at a leaf -> Zipper, None
@@ -63,38 +116,33 @@ object Index {
   // In the case of a follow, path to follow & path from follow.
 
   // TODO: Deal with infinite path expansion
-  sealed abstract class TravelResult[T <: Tree[T]]
-  case class TravelFailure[T <: Tree[T]](validPrefixPath: List[String], remainingPath: List[String]) extends TravelResult[T] {
+  sealed abstract class TravelResult[T <: Index[T]]
+  case class TravelFailure[T <: Index[T]](validPrefixPath: List[String], remainingPath: List[String]) extends TravelResult[T] {
     def toHere: BreakagePath = Here(validPrefixPath, remainingPath)
   }
-  case class TravelSubtree[T <: Tree[T]](tree: T) extends TravelResult[T]
-  case class TravelFollow[T <: Tree[T]](pathToFollow: List[String], pathFromFollow: List[String], remotePath: RemotePath) extends TravelResult[T]
+  case class TravelSubtree[T <: Index[T]](tree: T) extends TravelResult[T]
+  case class TravelFollow[T <: Index[T]](pathToFollow: List[String], pathFromFollow: List[String], remotePath: RemotePath) extends TravelResult[T]
 
-  def travelLocal[T <: Tree[T]](index: T, path: List[String]): TravelResult[T] = {
-
-    def go(index: T, zipper: Zipper[String]): TravelResult[T] = {
-      index.cata(
-        caseHash = _ => zipper match {
-          case ZipperMore(x, xs) => TravelFailure(zipper.getLeft, zipper.right) // Leaf, non empty path => Invalid Path
-          case _ => TravelSubtree(index) // Leaf, empty path => Valid path
-        },
-
-        caseFollow = remotePath =>
-          TravelFollow(zipper.getLeft, zipper.right, RemotePath(remotePath.root, remotePath.path ++ zipper.right)),
-
-        caseFolder = children => zipper match {
-          case ZipperMore(pathHead, tail) => children.get(pathHead) match {
-            // When pattern matching, the head is pushed automatically to the left in tail.
-            case None => TravelFailure(zipper.getLeft, zipper.right) // no such child in the folder
-            case Some(child) => go(child, tail) // Non tail recursive
-          }
-          case _ => TravelSubtree(index) // Folder, empty path => Valid path, point to the folder subtree.
+  // Failure / Subtree / Follow leaf + what remains
+  def travelToLocalFolder[T <: Index[T]](index: T, folderPath: List[String]): TravelResult[T] = {
+    // folder1/folder2/x
+    def go(index: T, zipper: Zipper[String]): TravelResult[T] = zipper match {
+      // When pattern matching, the head is pushed automatically to the left in tail.
+      case ZipperMore(folderName, rest) =>
+        index.getFolder(folderName) match {
+          case Some(folder) => go(folder, rest)
+          case None =>
+            // no such folder child in the folder
+            index.getFollow(folderName) match {
+              case Some(FollowLeaf(remotePath)) => TravelFollow(rest.getLeft, rest.right, RemotePath(remotePath.root, remotePath.path ++ rest.right))
+              case None => TravelFailure(zipper.getLeft, zipper.right)
+            }
         }
-
-      )
+      case _ => TravelSubtree(index)
 
     }
 
-    go(index, Zipper.fromList(path))
+    go(index, Zipper.fromList(folderPath))
   }
+
 }
