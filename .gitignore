@@ -8,3 +8,7 @@ concurrent-trees/code/target/
 # Data files
 *.dat
 *.db
+dokanDotNet/Dokany/.vs
+dokanDotNet/Dokany/packages/
+Debug/
+Release/
