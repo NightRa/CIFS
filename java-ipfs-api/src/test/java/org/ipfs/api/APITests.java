@@ -1,14 +1,12 @@
 package org.ipfs.api;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
-public class Test {
+import static org.junit.Assert.assertTrue;
+
+public class APITests {
 
     IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
     @org.junit.Test
@@ -35,9 +33,42 @@ public class Test {
         fileTest(largeFile);
     }
 
+//    @org.junit.Test
+    public void hugeFileStreamTest() {
+        byte[] hugeData = new byte[1000*1024*1024];
+        new Random(1).nextBytes(hugeData);
+        NamedStreamable.ByteArrayWrapper largeFile = new NamedStreamable.ByteArrayWrapper("massive.txt", hugeData);
+        try {
+            MerkleNode addResult = ipfs.add(largeFile);
+            InputStream in = ipfs.catStream(addResult.hash);
+
+            byte[] res = new byte[hugeData.length];
+            int offset = 0;
+            byte[] buf = new byte[4096];
+            int r;
+            while ((r = in.read(buf)) >= 0) {
+                try {
+                    System.arraycopy(buf, 0, res, offset, r);
+                    offset += r;
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            if (!Arrays.equals(res, hugeData))
+                throw new IllegalStateException("Different contents!");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @org.junit.Test
-    public void hostFileTest() {
-        NamedStreamable hostFile = new NamedStreamable.FileWrapper(new File("Makefile"));
+    public void hostFileTest() throws IOException {
+        Path tempFile = Files.createTempFile("IPFS", "tmp");
+        BufferedWriter w = new BufferedWriter(new FileWriter(tempFile.toFile()));
+        w.append("Some data");
+        w.flush();
+        w.close();
+        NamedStreamable hostFile = new NamedStreamable.FileWrapper(tempFile.toFile());
         fileTest(hostFile);
     }
 
@@ -75,12 +106,47 @@ public class Test {
             List<Multihash> add2 = ipfs.pin.add(hash);
             // adding something already pinned should succeed
             List<Multihash> add3 = ipfs.pin.add(hash);
-            Map<Multihash, Object> ls = ipfs.pin.ls();
+            Map<Multihash, Object> ls = ipfs.pin.ls(IPFS.PinType.recursive);
+            ipfs.repo.gc();
+            // object should still be present after gc
+            Map<Multihash, Object> ls2 = ipfs.pin.ls(IPFS.PinType.recursive);
+            boolean stillPinned = ls2.containsKey(hash);
             System.out.println(ls);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    @org.junit.Test
+    public void indirectPinTest() {
+        try {
+            Multihash EMPTY = ipfs.object._new(Optional.empty()).hash;
+            org.ipfs.api.MerkleNode data = ipfs.object.patch(EMPTY, "set-data", Optional.of("childdata".getBytes()), Optional.empty(), Optional.empty());
+            Multihash child = data.hash;
+
+            org.ipfs.api.MerkleNode tmp1 = ipfs.object.patch(EMPTY, "set-data", Optional.of("parent1_data".getBytes()), Optional.empty(), Optional.empty());
+            Multihash parent1 = ipfs.object.patch(tmp1.hash, "add-link", Optional.empty(), Optional.of(child.toString()), Optional.of(child)).hash;
+            ipfs.pin.add(parent1);
+
+            org.ipfs.api.MerkleNode tmp2 = ipfs.object.patch(EMPTY, "set-data", Optional.of("parent2_data".getBytes()), Optional.empty(), Optional.empty());
+            Multihash parent2 = ipfs.object.patch(tmp2.hash, "add-link", Optional.empty(), Optional.of(child.toString()), Optional.of(child)).hash;
+            ipfs.pin.add(parent2);
+            ipfs.pin.rm(parent1, true);
+
+            Map<Multihash, Object> ls = ipfs.pin.ls(IPFS.PinType.all);
+            boolean childPresent = ls.containsKey(child);
+            if (!childPresent)
+                throw new IllegalStateException("Child not present!");
+
+            ipfs.repo.gc();
+            Map<Multihash, Object> ls2 = ipfs.pin.ls(IPFS.PinType.all);
+            boolean childPresentAfterGC = ls2.containsKey(child);
+            if (!childPresentAfterGC)
+                throw new IllegalStateException("Child not present!");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+}
 
     @org.junit.Test
     public void objectPatch() {
@@ -160,12 +226,15 @@ public class Test {
     }
 
     @org.junit.Test
-    public void fileTest() {
+    public void fileContentsTest() {
         try {
             ipfs.repo.gc();
             List<Multihash> local = ipfs.refs.local();
             for (Multihash hash: local) {
-                Map ls = ipfs.file.ls(hash);
+                try {
+                    Map ls = ipfs.file.ls(hash);
+                    return;
+                } catch (Exception e) {} // non unixfs files will throw an exception here
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -284,6 +353,9 @@ public class Test {
     public void toolsTest() {
         try {
             String version = ipfs.version();
+            int major = Integer.parseInt(version.split("\\.")[0]);
+            int minor = Integer.parseInt(version.split("\\.")[1]);
+            assertTrue(major >= 0 && minor >= 4);     // Requires at least 0.4.0
             Map commands = ipfs.commands();
         } catch (IOException e) {
             throw new RuntimeException(e);

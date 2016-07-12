@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.stream.*;
 
 public class IPFS {
+
+    public static final String MIN_VERSION = "0.4.2";
     public enum PinType {all, direct, indirect, recursive}
     public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
     public List<String> ObjectPatchTypes = Arrays.asList("add-link", "rm-link", "set-data", "append-data");
@@ -44,6 +46,16 @@ public class IPFS {
         this.host = host;
         this.port = port;
         this.version = version;
+        // Check IPFS is sufficiently recent
+        try {
+            String ipfsVersion = version();
+            int[] parts = Stream.of(ipfsVersion.split("\\.")).mapToInt(Integer::parseInt).toArray();
+            int[] minParts = Stream.of(MIN_VERSION.split("\\.")).mapToInt(Integer::parseInt).toArray();
+            if (parts[0] < minParts[0] || parts[1] < minParts[1] || parts[2] < minParts[2])
+                throw new IllegalStateException("You need to use a more recent version of IPFS! >= " + MIN_VERSION);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public MerkleNode add(NamedStreamable file) throws IOException {
@@ -55,7 +67,10 @@ public class IPFS {
         for (NamedStreamable f : files)
             m.addFilePart("file", f);
         String res = m.finish();
-        return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+        return JSONParser.parseStream(res).stream()
+                .skip(1)
+                .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
+                .collect(Collectors.toList());
     }
 
     public List<MerkleNode> ls(Multihash hash) throws IOException {
@@ -69,6 +84,10 @@ public class IPFS {
 
     public byte[] get(Multihash hash) throws IOException {
         return retrieve("get/" + hash);
+    }
+
+    public InputStream catStream(Multihash hash) throws IOException {
+        return retrieveStream("cat/" + hash);
     }
 
     public Map refs(Multihash hash, boolean recursive) throws IOException {
@@ -97,7 +116,11 @@ public class IPFS {
     // level 2 commands
     public class Refs {
         public List<Multihash> local() throws IOException {
-            return Arrays.asList(new String(retrieve("refs/local")).split("\n")).stream().map(Multihash::fromBase58).collect(Collectors.toList());
+            String jsonStream = new String(retrieve("refs/local"));
+            return JSONParser.parseStream(jsonStream).stream()
+                    .map(m -> (String) (((Map) m).get("Ref")))
+                    .map(Multihash::fromBase58)
+                    .collect(Collectors.toList());
         }
     }
 
@@ -105,7 +128,7 @@ public class IPFS {
      */
     public class Pin {
         public List<Multihash> add(Multihash hash) throws IOException {
-            return ((List<Object>)((Map)retrieveAndParse("pin/add?stream-channels=true&arg=" + hash)).get("Pinned"))
+            return ((List<Object>)((Map)retrieveAndParse("pin/add?stream-channels=true&arg=" + hash)).get("Pins"))
                     .stream()
                     .map(x -> Multihash.fromBase58((String)x))
                     .collect(Collectors.toList());
@@ -127,7 +150,7 @@ public class IPFS {
 
         public List<Multihash> rm(Multihash hash, boolean recursive) throws IOException {
             Map json = retrieveMap("pin/rm?stream-channels=true&r=" + recursive + "&arg=" + hash);
-            return ((List<Object>) json.get("Pinned")).stream().map(x -> Multihash.fromBase58((String) x)).collect(Collectors.toList());
+            return ((List<Object>) json.get("Pins")).stream().map(x -> Multihash.fromBase58((String) x)).collect(Collectors.toList());
         }
     }
 
@@ -428,9 +451,24 @@ public class IPFS {
             while ((r = in.read(buf)) >= 0)
                 resp.write(buf, 0, r);
             return resp.toByteArray();
+        } catch (ConnectException e) {
+            throw new RuntimeException("Couldn't connect to IPFS daemon at "+target+"\n Is IPFS running?");
         } catch (IOException e) {
-            throw new RuntimeException("Trailer: " + conn.getHeaderFields().get("Trailer"), e);
+            throw new RuntimeException("IOException contacting IPFS daemon.\nTrailer: " + conn.getHeaderFields().get("Trailer"), e);
         }
+    }
+
+    private InputStream retrieveStream(String path) throws IOException {
+        URL target = new URL("http", host, port, version + path);
+        return IPFS.getStream(target);
+    }
+
+    private static InputStream getStream(URL target) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) target.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-Type", "application/json");
+
+        return conn.getInputStream();
     }
 
     private Map postMap(String path, byte[] body, Map<String, String> headers) throws IOException {

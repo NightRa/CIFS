@@ -33,7 +33,7 @@ public class Multihash {
     }
 
     public final Type type;
-    private final byte[] hash;
+    public final byte[] hash;
 
     public Multihash(Type type, byte[] hash) {
         if (hash.length > 127)
@@ -54,6 +54,19 @@ public class Multihash {
         res[1] = (byte)hash.length;
         System.arraycopy(hash, 0, res, 2, hash.length);
         return res;
+    }
+
+    public void serialize(DataOutput dout) throws IOException {
+        dout.write(toBytes());
+    }
+
+    public static Multihash deserialize(DataInput din) throws IOException {
+        int type = din.readUnsignedByte();
+        int len = din.readUnsignedByte();
+        Type t = Type.lookup(type);
+        byte[] hash = new byte[len];
+        din.readFully(hash);
+        return new Multihash(t, hash);
     }
 
     @Override
