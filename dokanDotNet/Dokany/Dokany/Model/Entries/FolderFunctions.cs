@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using Dokany.Model.Entries;
+using System.Linq;
 using Dokany.Model.PathUtils;
-using Dokany.Model.Pointers;
 using Dokany.Util.OptionUtil;
-using static Dokany.Util.OptionUtil.Opt;
 
-namespace Dokany.Model.Directory
+namespace Dokany.Model.Entries
 {
     public static class FolderFunctions
     {
@@ -17,15 +14,15 @@ namespace Dokany.Model.Directory
                 if (folder.folders.ContainsKey(bracket))
                     folder = folder.folders[bracket];
                 else
-                    return None<Folder>();
-            return Some(folder);
+                    return Opt.None<Folder>();
+            return Opt.Some(folder);
         }
         public static Option<FileHash> GetInnerFile(this Folder @this, Bracket fileName)
         {
             if (@this.files.ContainsKey(fileName))
-                return Some(@this.files[fileName]);
+                return Opt.Some(@this.files[fileName]);
             else
-                return None<FileHash>();
+                return Opt.None<FileHash>();
         }
         public static IEnumerable<NamedEntry> GetInnerEntries(this Folder @this)
         {
@@ -83,17 +80,17 @@ namespace Dokany.Model.Directory
                 return folder;
             if (!isDirectory && file.IsSome)
                 return file;
-            //if (file.IsSome)
-              //  return file;
-            //if (folder.IsSome)
-              //  return folder;
-            return None<Entry>();
+            return Opt.None<Entry>();
         }
 
         public static Option<NamedEntry> GetNamedEntry(this Folder @this, EntryAccessBrackets access, bool isDirectory)
         {
             return GetEntry(@this, access, isDirectory)
                 .Map(entry => new NamedEntry(entry, access.entryBracket.Value));
+        }
+        public static IEnumerable<FileHash> AllInnerFiles(this Folder @this)
+        {
+            return @this.files.Values.Concat(@this.folders.Values.SelectMany(AllInnerFiles));
         }
     }
 }

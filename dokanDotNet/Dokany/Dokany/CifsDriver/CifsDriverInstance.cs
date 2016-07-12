@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using DokanNet;
 using Dokany.Model;
-using Dokany.Model.Directory;
 using Dokany.Model.Entries;
 using Dokany.Model.PathUtils;
 using Dokany.Model.Pointers;
@@ -26,7 +24,7 @@ namespace Dokany.CifsDriver
         }
         private void WriteToLog(string data)
         {
-            if (data.Contains("*"))
+            //if (data.Contains("*"))
                 Console.WriteLine(data);
         }
 

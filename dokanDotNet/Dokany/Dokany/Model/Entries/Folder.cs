@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using DokanNet;
-using Dokany.Model.Entries;
 using Dokany.Model.IndexExamples;
 using Dokany.Model.PathUtils;
 using Dokany.Model.Pointers;
 using Dokany.Util;
-using Dokany.Util.OptionUtil;
-using static Dokany.Util.Global;
 
-namespace Dokany.Model
+namespace Dokany.Model.Entries
 {
     public sealed class Folder : Entry, IDeepCopiable<Folder>
     {
@@ -32,9 +30,9 @@ namespace Dokany.Model
             {
                 FileName = folderName,
                 Attributes = FileAttributes.Directory,
-                CreationTime = TempTime,
-                LastWriteTime = TempTime,
-                LastAccessTime = TempTime,
+                CreationTime = Global.TempTime,
+                LastWriteTime = Global.TempTime,
+                LastAccessTime = Global.TempTime,
                 Length = 0
             };
         }
@@ -57,12 +55,13 @@ namespace Dokany.Model
 
         public override int GetHashCode()
         {
-            return Tuple.Create(folders.GetHashCode(), files.GetHashCode(), follows.GetHashCode()).GetHashCode();
+            return this.AllInnerFiles().EnumerableHashCode();
         }
 
         public Folder DeepCopy()
         {
             return new Folder(files.DeepCopy(), follows.DeepCopy(), folders.DeepCopy());
         }
+
     }
 }

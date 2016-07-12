@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -70,6 +68,18 @@ namespace Dokany.Util
             foreach (var pair in @this)
                 dict.Add(pair.Key.DeepCopy(), pair.Value.DeepCopy());
             return dict;
+        }
+
+        public static int EnumerableHashCode<T>(this IEnumerable<T> @this)
+        {
+            unchecked
+            {
+                int hashCode = 0;
+                foreach (var item in @this)
+                    hashCode = hashCode*31 + item.GetHashCode();
+                return hashCode;
+
+            }
         }
     }
 }
