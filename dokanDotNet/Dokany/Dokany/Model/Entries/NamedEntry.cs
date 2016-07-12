@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Dokany.Model.Entries
+﻿namespace Dokany.Model.Entries
 {
     public sealed class NamedEntry
     {

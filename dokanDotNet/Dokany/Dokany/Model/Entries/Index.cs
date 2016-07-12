@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DokanNet;
-using Dokany.Util;
+﻿using Dokany.Util;
 
-namespace Dokany.Model
+namespace Dokany.Model.Entries
 {
     public sealed class Index : IDeepCopiable<Index>
     {

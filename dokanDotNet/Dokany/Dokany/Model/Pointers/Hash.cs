@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using DokanNet;
 using Dokany.Util;
 
 namespace Dokany.Model.Pointers
@@ -44,10 +42,10 @@ namespace Dokany.Model.Pointers
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                return Math.Abs(bits.Aggregate(1, (acc, @byte) => acc * @byte));
-            }
+            int hash = 0;
+            foreach (var b in bits.Reverse().Take(4))
+                hash = (hash << 8) + b;
+            return hash;
         }
     }
 }

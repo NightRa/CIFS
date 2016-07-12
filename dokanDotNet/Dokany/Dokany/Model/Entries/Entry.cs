@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DokanNet;
+﻿using DokanNet;
 
-namespace Dokany.Model
+namespace Dokany.Model.Entries
 {
     public abstract class Entry
     {
