@@ -35,10 +35,6 @@ public interface NamedStreamable
         }
     }
 
-    public static NamedStreamable fileStream(File source) {
-        return new FileWrapper(source);
-    }
-
     class ByteArrayWrapper implements NamedStreamable {
         private final Optional<String> name;
         private final byte[] data;
