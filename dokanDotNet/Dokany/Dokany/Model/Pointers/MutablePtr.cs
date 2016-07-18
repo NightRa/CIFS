@@ -1,13 +1,13 @@
 ﻿
 namespace Dokany.Model.Pointers
 {
-    public struct MutablePtr
+    public class MutablePtr
     {
-        public readonly byte[] bits;
+        public byte[] Bits { get; }
 
         public MutablePtr(byte[] bits)
         {
-            this.bits = bits;
+            Bits = bits;
         }
     }
 }

@@ -2,13 +2,13 @@
 {
     public sealed class NamedEntry
     {
-        public readonly Entry entry;
-        public readonly string name;
+        public Entry Entry { get; }
+        public string Name { get; }
 
         public NamedEntry(Entry entry, string name)
         {
-            this.entry = entry;
-            this.name = name;
+            this.Entry = entry;
+            this.Name = name;
         }
     }
 }

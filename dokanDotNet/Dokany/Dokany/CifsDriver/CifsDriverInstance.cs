@@ -4,25 +4,25 @@ using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using DokanNet;
-using Dokany.Model;
 using Dokany.Model.Entries;
 using Dokany.Model.PathUtils;
 using Dokany.Model.Pointers;
 using Dokany.Util;
+using Dokany.Util.OptionUtil;
 using static Dokany.Util.Global;
 using FileAccess = DokanNet.FileAccess;
 
 namespace Dokany.CifsDriver
 {
-    public sealed class CifsDriverInstance : IDokanOperations, IDeepCopiable<CifsDriverInstance>
+    public sealed class CifsDriverInstance : IDokanOperations
     {
         public Index Index { get; set; }
-        public Folder MainFolder => Index.mainFolder;
+        public Folder MainFolder => Index.MainFolder;
         public CifsDriverInstance(Index index)
         {
             this.Index = index;
         }
-        private void WriteToLog(string data)
+        private static void WriteToLog(string data)
         {
             //if (data.Contains("*"))
                 Console.WriteLine(data);
@@ -52,9 +52,9 @@ namespace Dokany.CifsDriver
                             }
                             else
                             {
-                                if (MainFolder.GetFolder(access.AsBrackets()).IsNone)
-                                    if (MainFolder.GetFile(access).IsNone)
-                                        MainFolder.AddOrUpdateFile(access, new FileHash(Hash.Random(60)));
+                                if (MainFolder.GetFile(access).IsNone)
+                                    lock (Rand)
+                                        MainFolder.AddOrUpdateFile(access, new FileHash(Hash.Random(60, Rand)));
                             }
                         });
                         break;
@@ -102,9 +102,11 @@ namespace Dokany.CifsDriver
         {
             WriteToLog("************ ReadFile " + fileName + ", Buffer length: " + buffer.Length);
             var readBytes = 0;
-            EntryAccessBrackets.FromPath(fileName).FlatMap(access => MainFolder.GetFile(access)).Iter(file =>
+            EntryAccessBrackets.FromPath(fileName)
+                .FlatMap(access => MainFolder.GetFile(access))
+                .Iter(file =>
             {
-                var bytes = file.hash.bits.AsHexBytes();
+                var bytes = file.Hash.Bits.AsHexBytes();
                 var length = Math.Min(buffer.Length, bytes.Length);
                 Array.Copy(bytes, offset, buffer, 0, length);
                 readBytes = length;
@@ -116,15 +118,15 @@ namespace Dokany.CifsDriver
         public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)
         {
             WriteToLog("****** WriteFile " + fileName + ", buffer length: " + buffer.Length);
-            int writtenBytes = 0;
+         //   int writtenBytes = 0;
 
-            EntryAccessBrackets.FromPath(fileName).Iter(access =>
-                MainFolder.GetFile(access).Iter(file =>
-                    writtenBytes = file.Write(buffer, offset, info.WriteToEndOfFile)
-                    )
-                );
-            
-            bytesWritten = writtenBytes;
+       //     EntryAccessBrackets.FromPath(fileName).Iter(access =>
+       //         MainFolder.GetFile(access).Iter(file =>
+       //             writtenBytes = file.Write(buffer, offset, info.WriteToEndOfFile)
+       //             )
+       //         );
+
+            bytesWritten = buffer.Length;
             return NtStatus.Success;
         }
 
@@ -142,7 +144,11 @@ namespace Dokany.CifsDriver
                 FileName = "", Attributes = FileAttributes.Directory, CreationTime = TempTime, LastWriteTime = TempTime, LastAccessTime = TempTime, Length = 0
             };
 
-            fileInfo = EntryAccessBrackets.FromPath(fileName).FlatMap(access => MainFolder.GetNamedEntry(access, info.IsDirectory)).MapOrDefault(ne => ne.entry.GetInfo(ne.name), fileInformation);
+            fileInfo =
+                EntryAccessBrackets.FromPath(fileName)
+                .FlatMap(access => MainFolder.GetNamedEntry(access, info.IsDirectory))
+                .Map(ne => ne.Entry.GetInfo(ne.Name))
+                .OrElse(fileInformation);
 
             return NtStatus.Success;
         }
@@ -155,7 +161,7 @@ namespace Dokany.CifsDriver
             if (folder.IsSome)
                 files = folder.ValueUnsafe
                     .GetInnerEntries()
-                    .Select(nm => nm.entry.GetInfo(nm.name))
+                    .Select(nm => nm.Entry.GetInfo(nm.Name))
                     .Concat(GetEmptyDirectoryDefaultFiles())
                     .ToArray();
             else
@@ -202,7 +208,10 @@ namespace Dokany.CifsDriver
         {
             WriteToLog($"****** MoveFile old: {oldName}, new: {newName}, replace: {replace}");
 
-            EntryAccessBrackets.FromPath(oldName).Iter(oldAccess => EntryAccessBrackets.FromPath(newName).Iter(newAccess => MainFolder.MoveFile(oldAccess, newAccess, replace)));
+            EntryAccessBrackets.FromPath(oldName)
+                .Iter(oldAccess => EntryAccessBrackets.FromPath(newName)
+                    .Iter(newAccess => MainFolder.MoveFile(oldAccess, newAccess))
+                 );
 
             return NtStatus.Success;
         }
@@ -253,31 +262,16 @@ namespace Dokany.CifsDriver
         public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)
         {
             WriteToLog("***** GetFileSecurity " + fileName);
-            FileSystemSecurity sec = null;
+            security = new FileSecurity();
             try
             {
-                //if (info.IsDirectory)
-                {
-                    if (MainFolder.GetFolder(fileName.AsBrackets()).IsSome)
-                    {
-                        sec = new DirectorySecurity();
-                        sec.AddAccessRule(new FileSystemAccessRule("everyone", FileSystemRights.FullControl,
-                            InheritanceFlags.ObjectInherit | InheritanceFlags.ContainerInherit,
-                            PropagationFlags.NoPropagateInherit, AccessControlType.Allow));
-                      //  sec.AddAuditRule(new FileSystemAuditRule("ev", ));
-                    }
-                }
-                //else
-                {
-                    if (EntryAccessBrackets.FromPath(fileName).FlatMap(MainFolder.GetFile).IsSome)
-                    {
-                        sec = new FileSecurity();
-                        sec.AddAccessRule(new FileSystemAccessRule("everyone", FileSystemRights.FullControl,
-                            InheritanceFlags.ObjectInherit | InheritanceFlags.ContainerInherit,
-                            PropagationFlags.NoPropagateInherit, AccessControlType.Allow));
-                    }
-                }
-                security = sec;
+                var maybeEntry =
+                    EntryAccessBrackets.FromPath(fileName)
+                        .FlatMap(access => MainFolder.GetEntry(access));
+                if (maybeEntry.IsNone)
+                    return DokanResult.PathNotFound;
+
+                security = maybeEntry.ValueUnsafe.GetSecurityInfo();
                 return NtStatus.Success;
             }
             catch (UnauthorizedAccessException)
@@ -310,11 +304,6 @@ namespace Dokany.CifsDriver
             WriteToLog("****** FindStreams " + fileName);
             streams = new FileInformation[0];
             return NtStatus.Success;
-        }
-
-        public CifsDriverInstance DeepCopy()
-        {
-            return new CifsDriverInstance(this.Index.DeepCopy());
         }
     }
 }

@@ -24,8 +24,8 @@ namespace Dokany.Model.IndexExamples
         {
             var files = new Dictionary<Bracket, FileHash>
             {
-                { "one.txt".AsBracket(), new FileHash(Hash.Random(20))},
-                { "two.txt".AsBracket(), new FileHash(Hash.Random(20))}
+                { "one.txt".AsBracket(), new FileHash(Hash.Random(20, Global.Rand))},
+                { "two.txt".AsBracket(), new FileHash(Hash.Random(20, Global.Rand))}
             };
             var follows = EmptyDict<Bracket, RemotePath>();
             var folders = EmptyDict<Bracket, Folder>();
@@ -43,7 +43,7 @@ namespace Dokany.Model.IndexExamples
                 {"two".AsBracket(), EmptyFolder()}
             };
             var mainFolder = new Folder(files, follows, folders);
-            folders["one".AsBracket()].folders.Add("main".AsBracket(), mainFolder);
+            folders["one".AsBracket()].Folders.Add("main".AsBracket(), mainFolder);
             return new Index(mainFolder);
         }
 
@@ -51,8 +51,8 @@ namespace Dokany.Model.IndexExamples
         {
             var files = new Dictionary<Bracket, FileHash>
             {
-                { "first.txt".AsBracket(), new FileHash(Hash.Random(20))},
-                { "second.txt".AsBracket(), new FileHash(Hash.Random(20))}
+                { "first.txt".AsBracket(), new FileHash(Hash.Random(20, Global.Rand))},
+                { "second.txt".AsBracket(), new FileHash(Hash.Random(20, Global.Rand))}
             };
             var follows = EmptyDict<Bracket, RemotePath>();
             var folders = new Dictionary<Bracket, Folder>
@@ -61,7 +61,23 @@ namespace Dokany.Model.IndexExamples
                 {"two".AsBracket(), EmptyFolder()}
             };
             var mainFolder = new Folder(files, follows, folders);
-            folders["one".AsBracket()].folders.Add("mainCircle".AsBracket(), mainFolder);
+            folders["one".AsBracket()].Folders.Add("mainCircle".AsBracket(), mainFolder);
+            return new Index(mainFolder);
+        }
+        public static Index Index4()
+        {
+            var file1 = new FileHash(Hash.Random(20, Global.Rand));
+            var file2 = new FileHash(Hash.Random(20, Global.Rand));
+            var file3 = new FileHash(Hash.Random(20, Global.Rand));
+
+            var folderThree = EmptyFolder();
+            folderThree.Files["three.txt".AsBracket()] = file3;
+
+            var mainFolder = EmptyFolder();
+            mainFolder.Files["one.txt".AsBracket()] = file1;
+            mainFolder.Files["two.txt".AsBracket()] = file2;
+            mainFolder.Folders["folderThree".AsBracket()] = folderThree;
+
             return new Index(mainFolder);
         }
     }

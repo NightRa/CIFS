@@ -13,11 +13,6 @@ namespace Dokany.Util.OptionUtil
             return new NoneOption<S>();
         }
 
-        public S MapOrDefault<S>(Func<T, S> map, S @default)
-        {
-            return @default;
-        }
-
         public Option<S> FlatMap<S>(Func<T, Option<S>> map)
         {
             return new NoneOption<S>();

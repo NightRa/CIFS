@@ -4,48 +4,44 @@ using Dokany.Util;
 
 namespace Dokany.Model.Pointers
 {
-    public struct Hash 
+    public class Hash 
     {
-        public readonly byte[] bits;
+        public byte[] Bits { get; }
 
         public Hash(byte[] bits)
         {
-            this.bits = bits;
+            Bits = bits;
         }
         
 
         public override string ToString()
         {
-            return BitConverter.ToString(bits).Replace("-", string.Empty); ;
+            return BitConverter.ToString(Bits).Replace("-", string.Empty); ;
         }
 
-        public static Hash Random(int byteLength)
+        public static Hash Random(int byteLength, Random rnd)
         {
-            lock (Global.Rand)
-            {
-                var bytes = new byte[byteLength];
-                Global.Rand.NextBytes(bytes);
-                return new Hash(bytes);
-            }
+            var bytes = new byte[byteLength];
+            rnd.NextBytes(bytes);
+            return new Hash(bytes);
         }
 
-        public bool Equals(Hash other)
+        protected bool Equals(Hash other)
         {
-            return bits.ArrayEquals(other.bits, (b1, b2) => b1 == b2);
+            return Bits.ArrayEquals(other.Bits, (b1, b2) => b1 == b2);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is Hash && Equals((Hash) obj);
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Hash) obj);
         }
 
         public override int GetHashCode()
         {
-            int hash = 0;
-            foreach (var b in bits.Reverse().Take(4))
-                hash = (hash << 8) + b;
-            return hash;
+            return Bits?.GetHashCode() ?? 0;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Dokany.Model.PathUtils;
@@ -8,11 +9,6 @@ namespace Dokany.Util
 {
     public static class FileSystemUtil
     {
-        public static string FileName(this string path)
-        {
-            return Path.GetFileName(path);
-        }
-
         public static Bracket AsBracket(this string @this)
         {
             return new Bracket(@this);
@@ -28,6 +24,15 @@ namespace Dokany.Util
         public static Brackets AsBrackets(this IEnumerable<Bracket> @this)
         {
             return new Brackets(@this);
+        }
+
+        public static string GetPath(this Environment.SpecialFolder @this)
+        {
+            return Environment.GetFolderPath(@this);
+        }
+        public static DirectoryInfo GetDirectoryInfo(this string @this)
+        {
+            return new DirectoryInfo(@this);
         }
     }
 }

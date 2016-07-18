@@ -1,19 +1,20 @@
-﻿using Dokany.Util;
+﻿using System;
+using Dokany.Util;
 
 namespace Dokany.Model.Entries
 {
-    public sealed class Index : IDeepCopiable<Index>
+    public sealed class Index
     {
-        public readonly Folder mainFolder;
+        public Folder MainFolder { get; }
 
         public Index(Folder mainFolder)
         {
-            this.mainFolder = mainFolder;
+            this.MainFolder = mainFolder;
         }
 
         private bool Equals(Index other)
         {
-            return mainFolder.Equals(other.mainFolder);
+            return MainFolder.Equals(other.MainFolder);
         }
 
         public override bool Equals(object obj)
@@ -25,12 +26,12 @@ namespace Dokany.Model.Entries
 
         public override int GetHashCode()
         {
-            return mainFolder.GetHashCode();
+            return MainFolder.GetHashCode();
         }
 
-        public Index DeepCopy()
+        public override string ToString()
         {
-            return new Index(mainFolder.DeepCopy());
+            return "Index:" + Environment.NewLine + MainFolder.ToString().AddTabs();
         }
     }
 }

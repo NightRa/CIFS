@@ -9,29 +9,29 @@ namespace Dokany.Model.PathUtils
 {
     public sealed class EntryAccessBrackets
     {
-        public readonly Brackets bracketsUptoParentFolder;
-        public readonly Bracket entryBracket;
+        public Brackets BracketsUptoParentFolder { get; }
+        public Bracket EntryBracket { get; }
 
         public EntryAccessBrackets(Brackets bracketsUptoParentFolder, Bracket entryBracket)
         {
-            this.bracketsUptoParentFolder = bracketsUptoParentFolder;
-            this.entryBracket = entryBracket;
+            this.BracketsUptoParentFolder = bracketsUptoParentFolder;
+            this.EntryBracket = entryBracket;
         }
 
         public Brackets AsBrackets()
         {
-            var bracktList = new LinkedList<Bracket>(bracketsUptoParentFolder);
-            bracktList.AddLast(entryBracket);
+            var bracktList = new LinkedList<Bracket>(BracketsUptoParentFolder);
+            bracktList.AddLast(EntryBracket);
             return bracktList.AsBrackets();
         }
 
         public static Option<EntryAccessBrackets> FromPath(string path)
         {
-            var brackets = path.Split("\\".Singleton(), RemoveEmptyEntries);
+            var brackets = path.Split('\\'.Singleton(), RemoveEmptyEntries);
             var length = brackets.Length;
             if (length == 0)
-                return None< EntryAccessBrackets>();
-            var access = new EntryAccessBrackets(brackets.RevTail().AsBrackets(), brackets.Last().AsBracket());
+                return None<EntryAccessBrackets>();
+            var access = new EntryAccessBrackets(brackets.Reverse().Tail().AsBrackets(), brackets.Last().AsBracket());
             return Some(access);
         } 
 

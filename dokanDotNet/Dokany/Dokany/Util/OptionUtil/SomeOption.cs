@@ -18,11 +18,6 @@ namespace Dokany.Util.OptionUtil
             return new SomeOption<S>(map(ValueUnsafe));
         }
 
-        public S MapOrDefault<S>(Func<T, S> map, S @default)
-        {
-            return map(ValueUnsafe);
-        }
-
         public Option<S> FlatMap<S>(Func<T, Option<S>> map)
         {
             return map(ValueUnsafe);
