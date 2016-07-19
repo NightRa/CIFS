@@ -31,7 +31,7 @@ namespace Dokany.Model.PathUtils
             var length = brackets.Length;
             if (length == 0)
                 return None<EntryAccessBrackets>();
-            var access = new EntryAccessBrackets(brackets.Reverse().Tail().AsBrackets(), brackets.Last().AsBracket());
+            var access = new EntryAccessBrackets(brackets.Reverse().Tail().Reverse().AsBrackets(), brackets.Last().AsBracket());
             return Some(access);
         } 
 

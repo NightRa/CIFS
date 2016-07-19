@@ -9,6 +9,7 @@ using Dokany.Model.IndexExamples;
 using Dokany.Model.PathUtils;
 using Dokany.Model.Pointers;
 using Dokany.Util;
+using Dokany.Util.OptionUtil;
 using static System.Environment;
 
 namespace Dokany.Model.Entries
@@ -25,7 +26,6 @@ namespace Dokany.Model.Entries
             this.Follows = follows;
             this.Folders = folders;
         }
-
 
         public override FileInformation GetInfo(string folderName)
         {
@@ -69,7 +69,6 @@ namespace Dokany.Model.Entries
                 .GetPath()
                 .GetDirectoryInfo()
                 .GetAccessControl();
-
         }
 
         public override string ToString()

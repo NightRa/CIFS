@@ -38,7 +38,7 @@ namespace Dokany.CifsDriver
             WriteToLog("CreateFile " + fileName);
             var maybeAccess = EntryAccessBrackets.FromPath(fileName);
             if (fileName.EndsWith("desktop.ini"))
-                return NtStatus.Success;
+                return DokanResult.Success;
             if (info.DeleteOnClose)
                 WriteToLog("**** CreateFile: Delete on close, " + fileName);
 
@@ -56,13 +56,13 @@ namespace Dokany.CifsDriver
                         if (folder.IsSome)
                             return DokanResult.FileExists;
                         MainFolder.AddOrUpdateFolder(maybeAccess.ValueUnsafe, Folder.Empty);
-                        return NtStatus.Success;
+                        return DokanResult.Success;
                     case FileMode.Open:
                         if (folder.IsNone)
                             return DokanResult.PathNotFound;
-                        return NtStatus.Success;
+                        return DokanResult.Success;
                     default:
-                        return NtStatus.Success;
+                        return DokanResult.Success;
                 }
             }
 
@@ -77,7 +77,7 @@ namespace Dokany.CifsDriver
                         info.IsDirectory = folder.IsSome;
                         info.Context = new object();
                     }
-                    return NtStatus.Success;
+                    return DokanResult.Success;
                 case FileMode.CreateNew:
                     if (pathExists)
                         return DokanResult.FileExists;
@@ -92,7 +92,7 @@ namespace Dokany.CifsDriver
                 lock (Rand)
                     MainFolder.AddOrUpdateFile(maybeAccess.ValueUnsafe, new FileHash(Hash.Random(60, Rand)));
 
-            return NtStatus.Success;
+            return DokanResult.Success;
 
         }
 
@@ -138,7 +138,7 @@ namespace Dokany.CifsDriver
                 readBytes = length;
             });
             bytesRead = readBytes;
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)
@@ -153,13 +153,13 @@ namespace Dokany.CifsDriver
        //         );
 
             bytesWritten = buffer.Length;
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus FlushFileBuffers(string fileName, DokanFileInfo info)
         {
             WriteToLog("***** FlushFileBuffers " + fileName);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, DokanFileInfo info)
@@ -176,7 +176,7 @@ namespace Dokany.CifsDriver
                 .Map(ne => ne.Entry.GetInfo(ne.Name))
                 .OrElse(fileInformation);
 
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)
@@ -193,7 +193,7 @@ namespace Dokany.CifsDriver
             else
                 files = GetEmptyDirectoryDefaultFiles();
 
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         private static IList<FileInformation> GetEmptyDirectoryDefaultFiles()
@@ -205,13 +205,13 @@ namespace Dokany.CifsDriver
         public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, DokanFileInfo info)
         {
             WriteToLog("*** SetFileAttributes " + fileName);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, DokanFileInfo info)
         {
             WriteToLog("*** SetFileTime " + fileName);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus DeleteFile(string fileName, DokanFileInfo info)
@@ -222,7 +222,7 @@ namespace Dokany.CifsDriver
             if (!fileExists)
                 return DokanResult.FileNotFound;
             access.Iter(MainFolder.DeleteFile);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus DeleteDirectory(string fileName, DokanFileInfo info)
@@ -236,43 +236,74 @@ namespace Dokany.CifsDriver
             if (!isEmpty)
                 return DokanResult.DirectoryNotEmpty;
             access.Iter(MainFolder.DeleteFolder);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus MoveFile(string oldName, string newName, bool replace, DokanFileInfo info)
         {
             WriteToLog($"****** MoveFile old: {oldName}, new: {newName}, replace: {replace}");
 
-            EntryAccessBrackets.FromPath(oldName)
-                .Iter(oldAccess => EntryAccessBrackets.FromPath(newName)
-                    .Iter(newAccess => MainFolder.MoveFile(oldAccess, newAccess))
-                 );
-
-            return NtStatus.Success;
+            var oldAccess = EntryAccessBrackets.FromPath(oldName);
+            var newAccess = EntryAccessBrackets.FromPath(newName);
+            if (info.IsDirectory)
+            {
+                var newFolder = MainFolder.GetFolder(newName.AsBrackets());
+                if (newFolder.IsNone)
+                {
+                    info.Context = null;
+                    MainFolder.MoveFolder(oldAccess.ValueUnsafe, newAccess.ValueUnsafe);
+                    return DokanResult.Success;
+                }
+                if (replace)
+                {
+                    info.Context = null;
+                    MainFolder.DeleteFolder(newAccess.ValueUnsafe);
+                    MainFolder.MoveFolder(oldAccess.ValueUnsafe, newAccess.ValueUnsafe);
+                    return DokanResult.Success;
+                }
+            }
+            else
+            {
+                var newFile = newAccess.FlatMap(MainFolder.GetFile);
+                if (newFile.IsNone)
+                {
+                    info.Context = null;
+                    MainFolder.MoveFile(oldAccess.ValueUnsafe, newAccess.ValueUnsafe);
+                    return DokanResult.Success;
+                }
+                if (replace)
+                {
+                    info.Context = null;
+                    MainFolder.DeleteFile(newAccess.ValueUnsafe);
+                    MainFolder.MoveFile(oldAccess.ValueUnsafe, newAccess.ValueUnsafe);
+                    return DokanResult.Success;
+                }
+            }
+            return DokanResult.FileExists;
         }
 
         public NtStatus SetEndOfFile(string fileName, long length, DokanFileInfo info)
         {
             WriteToLog("****** SetEndOfFile " + fileName);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus SetAllocationSize(string fileName, long length, DokanFileInfo info)
         {
             WriteToLog("***** SetAllocationSize " + fileName);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus LockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
             WriteToLog("**** LockFile " + fileName);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus UnlockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
             WriteToLog("**** UnlockFile " + fileName);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, DokanFileInfo info)
@@ -281,7 +312,7 @@ namespace Dokany.CifsDriver
             totalNumberOfBytes = 1024L*1024L;
             freeBytesAvailable = totalNumberOfBytes;
             totalNumberOfFreeBytes = totalNumberOfBytes;
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, DokanFileInfo info)
@@ -291,7 +322,7 @@ namespace Dokany.CifsDriver
             fileSystemName = "NTFS";
 
             features = FileSystemFeatures.CasePreservedNames | FileSystemFeatures.CaseSensitiveSearch | FileSystemFeatures.PersistentAcls | FileSystemFeatures.SupportsRemoteStorage | FileSystemFeatures.UnicodeOnDisk;
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)
@@ -300,14 +331,12 @@ namespace Dokany.CifsDriver
             security = new FileSecurity();
             try
             {
-                var maybeEntry =
-                    EntryAccessBrackets.FromPath(fileName)
-                        .FlatMap(access => MainFolder.GetEntry(access));
+                var maybeEntry = MainFolder.GetEntry(fileName.AsBrackets());
                 if (maybeEntry.IsNone)
                     return DokanResult.PathNotFound;
 
                 security = maybeEntry.ValueUnsafe.GetSecurityInfo();
-                return NtStatus.Success;
+                return DokanResult.Success;
             }
             catch (UnauthorizedAccessException)
             {
@@ -319,26 +348,26 @@ namespace Dokany.CifsDriver
         public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)
         {
             WriteToLog("****** SetFileSecurity " + fileName);
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus Mounted(DokanFileInfo info)
         {
             WriteToLog("Mounted");
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus Unmounted(DokanFileInfo info)
         {
             WriteToLog("Unmounted");
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
 
         public NtStatus FindStreams(string fileName, out IList<FileInformation> streams, DokanFileInfo info)
         {
             WriteToLog("****** FindStreams " + fileName);
             streams = new FileInformation[0];
-            return NtStatus.Success;
+            return DokanResult.Success;
         }
     }
 }

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
-using System.Security.Principal;
 using DokanNet;
 using Dokany.Model.Pointers;
 using Dokany.Util;

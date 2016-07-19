@@ -90,6 +90,16 @@ namespace Dokany.Model.Entries
                 return file;
             return Opt.None<Entry>();
         }
+        public static Option<Entry> GetEntry(this Folder @this, Brackets brackets)
+        {
+            var folder = @this.GetFolder(brackets);
+            var file = EntryAccessBrackets.FromPath(brackets.ToString()).FlatMap(@this.GetFile);
+            if (folder.IsSome)
+                return folder;
+            if (file.IsSome)
+                return file;
+            return Opt.None<Entry>();
+        }
 
         public static Option<NamedEntry> GetNamedEntry(this Folder @this, EntryAccessBrackets access, bool isDirectory)
         {
