@@ -16,6 +16,9 @@ namespace Dokany.CifsDriver
 {
     public sealed class CifsDriverInstance : IDokanOperations
     {
+        private const FileAccess DataAccess = FileAccess.ReadData | FileAccess.WriteData | FileAccess.AppendData |
+                                              FileAccess.Execute |
+                                              FileAccess.GenericExecute | FileAccess.GenericWrite | FileAccess.GenericRead;
         public Index Index { get; set; }
         public Folder MainFolder => Index.MainFolder;
         public CifsDriverInstance(Index index)
@@ -24,50 +27,73 @@ namespace Dokany.CifsDriver
         }
         private static void WriteToLog(string data)
         {
-            //if (data.Contains("*"))
+            if (data.Contains("*"))
                 Console.WriteLine(data);
         }
 
-        public NtStatus CreateFile(string fileName, FileAccess fileAccess, FileShare share, FileMode mode, FileOptions options,
+        public NtStatus CreateFile(string fileName, FileAccess fileAccess, FileShare share, FileMode mode,
+            FileOptions options,
             FileAttributes attributes, DokanFileInfo info)
         {
             WriteToLog("CreateFile " + fileName);
-            if (!fileName.EndsWith("desktop.ini"))
+            var maybeAccess = EntryAccessBrackets.FromPath(fileName);
+            if (fileName.EndsWith("desktop.ini"))
+                return NtStatus.Success;
+            if (info.DeleteOnClose)
+                WriteToLog("**** CreateFile: Delete on close, " + fileName);
+
+            bool readWriteAttributes = (fileAccess & DataAccess) == 0;
+            var folder = MainFolder.GetFolder(fileName.AsBrackets());
+            var file = maybeAccess.FlatMap(MainFolder.GetFile);
+            var pathExists = file.IsSome || folder.IsSome;
+
+
+            if (info.IsDirectory)
             {
-                if (info.DeleteOnClose)
-                    WriteToLog("**** CreateFile: Delete on close, " + fileName);
-                if (info.Context == null)
-                    info.Context = new object();
                 switch (mode)
                 {
                     case FileMode.CreateNew:
-                    case FileMode.Create:
-                    case FileMode.OpenOrCreate:
-                        EntryAccessBrackets.FromPath(fileName).Iter(access =>
-                        {
-                            if (info.IsDirectory)
-                            {
-                                if (MainFolder.GetFolder(access.AsBrackets()).IsNone)
-                                    MainFolder.AddOrUpdateFolder(access, Folder.Empty);
-                            }
-                            else
-                            {
-                                if (MainFolder.GetFile(access).IsNone)
-                                    lock (Rand)
-                                        MainFolder.AddOrUpdateFile(access, new FileHash(Hash.Random(60, Rand)));
-                            }
-                        });
-                        break;
+                        if (folder.IsSome)
+                            return DokanResult.FileExists;
+                        MainFolder.AddOrUpdateFolder(maybeAccess.ValueUnsafe, Folder.Empty);
+                        return NtStatus.Success;
                     case FileMode.Open:
-                    case FileMode.Truncate:
-                    case FileMode.Append:
-                        break;
+                        if (folder.IsNone)
+                            return DokanResult.PathNotFound;
+                        return NtStatus.Success;
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+                        return NtStatus.Success;
                 }
             }
 
+            // info: File
+            switch (mode)
+            {
+                case FileMode.Open:
+                    if (!pathExists)
+                        return DokanResult.FileNotFound;
+                    if (folder.IsSome || readWriteAttributes)
+                    {
+                        info.IsDirectory = folder.IsSome;
+                        info.Context = new object();
+                    }
+                    return NtStatus.Success;
+                case FileMode.CreateNew:
+                    if (pathExists)
+                        return DokanResult.FileExists;
+                    break;
+                case FileMode.Truncate:
+                    if (!pathExists)
+                        return DokanResult.FileNotFound;
+                    break;
+            }
+            info.Context = new object();
+            if (maybeAccess.IsSome)
+                lock (Rand)
+                    MainFolder.AddOrUpdateFile(maybeAccess.ValueUnsafe, new FileHash(Hash.Random(60, Rand)));
+
             return NtStatus.Success;
+
         }
 
         public void Cleanup(string fileName, DokanFileInfo info)
@@ -94,8 +120,8 @@ namespace Dokany.CifsDriver
             if (info.DeleteOnClose)
             {
                 WriteToLog("**** Close with delete request: " + fileName + ", isDirectory: " + info.IsDirectory);
-                //info.Context = null;
             }
+            info.Context = null;
         }
 
         public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
@@ -155,7 +181,7 @@ namespace Dokany.CifsDriver
 
         public NtStatus FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)
         {
-            WriteToLog("FindFiles " + fileName);
+            WriteToLog("*** ---- FindFiles " + fileName);
             var brackets = fileName.AsBrackets();
             var folder = MainFolder.GetFolder(brackets);
             if (folder.IsSome)
@@ -191,16 +217,25 @@ namespace Dokany.CifsDriver
         public NtStatus DeleteFile(string fileName, DokanFileInfo info)
         {
             WriteToLog("*** DeleteFile " + fileName);
-            info.Context = null;
-            EntryAccessBrackets.FromPath(fileName).Iter(fileAccess => MainFolder.DeleteFile(fileAccess));
+            var access = EntryAccessBrackets.FromPath(fileName);
+            var fileExists = access.FlatMap(MainFolder.GetFile).IsSome;
+            if (!fileExists)
+                return DokanResult.FileNotFound;
+            access.Iter(MainFolder.DeleteFile);
             return NtStatus.Success;
         }
 
         public NtStatus DeleteDirectory(string fileName, DokanFileInfo info)
         {
-            WriteToLog("*** DeleteDirectory " + fileName);
-            info.Context = null;
-            EntryAccessBrackets.FromPath(fileName).Iter(fileAccess => MainFolder.DeleteFolder(fileAccess));
+            WriteToLog("*** DeleteFile " + fileName);
+            var access = EntryAccessBrackets.FromPath(fileName);
+            var folderExists = MainFolder.GetFolder(fileName.AsBrackets()).IsSome;
+            if (!folderExists)
+                return DokanResult.FileNotFound;
+            var isEmpty = MainFolder.GetFolder(fileName.AsBrackets()).ValueUnsafe.IsEmpty;
+            if (!isEmpty)
+                return DokanResult.DirectoryNotEmpty;
+            access.Iter(MainFolder.DeleteFolder);
             return NtStatus.Success;
         }
 
@@ -230,13 +265,13 @@ namespace Dokany.CifsDriver
 
         public NtStatus LockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
-            WriteToLog("LockFile " + fileName);
+            WriteToLog("**** LockFile " + fileName);
             return NtStatus.Success;
         }
 
         public NtStatus UnlockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
-            WriteToLog("UnlockFile " + fileName);
+            WriteToLog("**** UnlockFile " + fileName);
             return NtStatus.Success;
         }
 

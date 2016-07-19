@@ -41,6 +41,7 @@ namespace Dokany
                     else
                     {
                         hash = newHash;
+                        Thread.Sleep(30);
                         streamWriter.WriteLine("**************************");
                         streamWriter.WriteLine(index.MainFolder.ToString());
                         streamWriter.Flush();

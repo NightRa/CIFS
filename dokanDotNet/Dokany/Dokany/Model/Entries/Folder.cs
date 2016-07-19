@@ -41,6 +41,7 @@ namespace Dokany.Model.Entries
         }
 
         public static Folder Empty => Examples.EmptyFolder();
+        public bool IsEmpty => Files.Count == 0 && Follows.Count == 0 && Folders.Count == 0;
 
         private bool Equals(Folder other)
         {
