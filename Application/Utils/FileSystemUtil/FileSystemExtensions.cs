@@ -1,21 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using static System.Environment;
 
 namespace Utils.FileSystemUtil
 {
     public static class FileSystemExtensions
     {
-        public static string GetPath(this Environment.SpecialFolder @this)
+        public static string GetPath(this SpecialFolder @this)
         {
-            return Environment.GetFolderPath(@this);
+            return GetFolderPath(@this);
         }
 
         public static DirectoryInfo GetDirectoryInfo(this string @this)
         {
             return new DirectoryInfo(@this);
+        }
+
+        public static FileInfo GetFileInfo(this string @this)
+        {
+            return new FileInfo(@this);
         }
 
         public static string CombinePathWith(this string path, string bracket)
@@ -36,9 +41,10 @@ namespace Utils.FileSystemUtil
         {
             return Directory.Exists(folderPath);
         }
-        public static void CreateDirectory(this string folderPath)
+        public static void CreateDirectory(this string folderPath, FileAttributes additionalAttributes)
         {
-            Directory.CreateDirectory(folderPath);
+            var dir = Directory.CreateDirectory(folderPath);
+            dir.Attributes |= additionalAttributes;
         }
         public static byte[] ReadAllBytes(this string filePath)
         {

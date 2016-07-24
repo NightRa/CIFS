@@ -71,11 +71,7 @@ namespace FileSystem.Entries
         public override FileSystemSecurity GetSecurityInfo()
         {
             return
-                SpecialFolder.DesktopDirectory
-                .GetPath()
-                .GetDirectoryInfo()
-                .EnumerateFiles()
-                .Last()
+                FindFileSystemEntry.FindFilePath()
                 .GetAccessControl();
         }
 

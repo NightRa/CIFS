@@ -47,5 +47,10 @@ namespace CifsPreferences
                     .Map(driverChar =>
                         new Preferences(openOnStartup, driverChar)));
         }
+
+        public override string ToString()
+        {
+            return $"OpenOnStartup: {OpenOnStartup}, DriverChar: {DriverChar}";
+        }
     }
 }

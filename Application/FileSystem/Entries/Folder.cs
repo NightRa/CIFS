@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
@@ -19,6 +18,7 @@ using static System.Environment;
 
 namespace FileSystem.Entries
 {
+    // TODO: Concurrency is required!!!
     public sealed class Folder : Entry
     {
         public Dictionary<Bracket, FileHash> Files { get; }
@@ -73,9 +73,7 @@ namespace FileSystem.Entries
         public override FileSystemSecurity GetSecurityInfo()
         {
             return
-                SpecialFolder.MyDocuments
-                .GetPath()
-                .GetDirectoryInfo()
+                FindFileSystemEntry.FindDirectoryPath()
                 .GetAccessControl();
         }
 
@@ -107,10 +105,7 @@ namespace FileSystem.Entries
                 bytes.ToDictionary(index, Bracket.Parse, FileHash.Parse).FlatMap(files =>
                     bytes.ToDictionary(index, Bracket.Parse, RemotePath.Parse).FlatMap(follows =>
                         bytes.ToDictionary(index, Bracket.Parse, Folder.Parse).Map(folders =>
-                            new Folder(files, follows, folders)
-                            )
-                        )
-                    );
+                            new Folder(files, follows, folders))));
         }
     }
 }
