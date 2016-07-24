@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Utils.ArrayUtil;
 
 namespace Utils.IEnumerableUtil
 {
@@ -40,6 +41,15 @@ namespace Utils.IEnumerableUtil
         {
             foreach (var item in @this)
                 act(item);
+        }
+        public static void ZipIter<T1, T2>(this IEnumerable<T1> @this, IEnumerable<T2> other, Action<T1, T2> act)
+        {
+            var one = @this.ToArray();
+            var two = other.ToArray();
+            if (one.Length != two.Length)
+                throw new ArgumentException("Zip's inputs are of different length: one - " + one.Length + ", two - " + two.Length);
+            for (int i = 0; i < one.Length; i++)
+                act(one[i], two[i]);
         }
     }
 }

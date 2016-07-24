@@ -8,9 +8,12 @@ using Constants;
 using DokanNet;
 using FileSystem.Pointers;
 using FileSystemBrackets;
+using Utils;
+using Utils.Binary;
 using Utils.DictionaryUtil;
 using Utils.FileSystemUtil;
 using Utils.IEnumerableUtil;
+using Utils.Parsing;
 using Utils.StringUtil;
 using static System.Environment;
 
@@ -87,6 +90,27 @@ namespace FileSystem.Entries
 
 
             return str.ToString();
+        }
+
+        public byte[] ToBytes()
+        {
+            return
+                Files.ToBytes(b => b.ToBytes(), f => f.ToBytes())
+                    .Concat(Follows.ToBytes(b => b.ToBytes(), r => r.ToBytes()))
+                    .Concat(Folders.ToBytes(b => b.ToBytes(), f => f.ToBytes()))
+                    .ToArray();
+        }
+
+        public static ParsingResult<Folder> Parse(byte[] bytes, Box<int> index)
+        {
+            return
+                bytes.ToDictionary(index, Bracket.Parse, FileHash.Parse).FlatMap(files =>
+                    bytes.ToDictionary(index, Bracket.Parse, RemotePath.Parse).FlatMap(follows =>
+                        bytes.ToDictionary(index, Bracket.Parse, Folder.Parse).Map(folders =>
+                            new Folder(files, follows, folders)
+                            )
+                        )
+                    );
         }
     }
 }

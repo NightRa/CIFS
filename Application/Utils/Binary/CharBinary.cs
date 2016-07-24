@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Utils.ArrayUtil;
 using Utils.OptionUtil;
+using Utils.Parsing;
 using static Utils.OptionUtil.Opt;
 
 namespace Utils.Binary
@@ -12,12 +13,12 @@ namespace Utils.Binary
     {
         public static byte[] ToBytes(this char @this)
         {
-            return Convert.ToByte(@this).Singleton();
+            return ((int)@this).ToBytes();
         }
 
-        public static Option<char> FromBytes(this byte[] @this, ref int index)
+        public static ParsingResult<char> ToChar(this byte[] @this, Box<int> index)
         {
-            return Some(Convert.ToChar(@this[index++]));
+            return @this.ToInt(index).Map(num => (char)num);
         }
     }
 }

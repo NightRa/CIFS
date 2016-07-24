@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using CifsPreferences;
 using FileSystem.Entries;
+using Utils;
 using Utils.FileSystemUtil;
 using static Constants.Global;
 
@@ -29,9 +30,12 @@ namespace CifsStartupApp
             if (!CifsDirectoryPath.DoesFolderExists())
                 CifsDirectoryPath.CreateDirectory();
             if (!CifsPreferencesDataPath.DoesFileExists())
-                CifsPreferencesDataPath.CreateFile(Preferences.Default().AsBytes());
-           // if (!CifsIndexDataPath.DoesFileExists())
-           //     CifsIndexDataPath.CreateFile(Index.Default().AsBytes());
+                CifsPreferencesDataPath.CreateFile(Preferences.Default().ToBytes());
+            if (!CifsIndexDataPath.DoesFileExists())
+                CifsIndexDataPath.CreateFile(Index.Default().ToBytes());
+            var maybePreferences = Preferences.Parse(CifsPreferencesDataPath.ReadAllBytes(), new Box<int>(0));
+            var maybeIndex = Index.Parse(CifsIndexDataPath.ReadAllBytes(), new Box<int>(0));
+           // var p
         }
     }
 }

@@ -6,7 +6,9 @@ using Constants;
 using DokanNet;
 using FileSystem.Pointers;
 using FileSystemBrackets;
+using Utils;
 using Utils.FileSystemUtil;
+using Utils.Parsing;
 using static System.Environment;
 
 namespace FileSystem.Entries
@@ -80,6 +82,15 @@ namespace FileSystem.Entries
         public string AsString(string name)
         {
             return "File " + name + " - " + Hash.ToString();
+        }
+
+        public byte[] ToBytes()
+        {
+            return this.Hash.ToBytes();
+        }
+        public static ParsingResult<FileHash> Parse(byte[] bytes, Box<int> index)
+        {
+            return Hash.Parse(bytes, index).Map(hash => new FileHash(hash));
         }
     }
 }

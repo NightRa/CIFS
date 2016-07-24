@@ -29,7 +29,8 @@ namespace Utils.FileSystemUtil
         }
         public static void CreateFile(this string filePath, byte[] bytes)
         {
-            File.Create(filePath).Close();
+            using (var file = File.Create(filePath, bytes.Length))
+                file.Write(bytes, 0, bytes.Length);
         }
         public static bool DoesFolderExists(this string folderPath)
         {
@@ -38,6 +39,10 @@ namespace Utils.FileSystemUtil
         public static void CreateDirectory(this string folderPath)
         {
             Directory.CreateDirectory(folderPath);
+        }
+        public static byte[] ReadAllBytes(this string filePath)
+        {
+            return File.ReadAllBytes(filePath);
         }
     }
 }

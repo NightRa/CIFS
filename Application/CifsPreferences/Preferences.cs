@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FileSystem.Entries;
+using Utils;
+using Utils.Binary;
+using Utils.OptionUtil;
+using Utils.Parsing;
 using static Constants.Global;
+using static Utils.OptionUtil.Opt;
 
 namespace CifsPreferences
 {
@@ -23,12 +28,24 @@ namespace CifsPreferences
             return new Preferences(openOnStartup: true, driverChar: DefaultDriverChar);
         }
 
-        public byte[] AsBytes()
+        public byte[] ToBytes()
         {
-            throw new NotImplementedException();
-           // OpenOnStartup
-               // .AsBytes()
-                //.Concat(DriverChar.AsByte())
+            return OpenOnStartup
+                .ToBytes()
+                .Concat(DriverChar.ToBytes())
+                .ToArray();
+        }
+
+        public static ParsingResult<Preferences> Parse(byte[] bytes, Box<int> index)
+        {
+            return
+                bytes
+                .ToBool(index)
+                .FlatMap(openOnStartup =>
+                    bytes
+                    .ToChar(index)
+                    .Map(driverChar =>
+                        new Preferences(openOnStartup, driverChar)));
         }
     }
 }

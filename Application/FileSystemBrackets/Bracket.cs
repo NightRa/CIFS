@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Utils;
+using Utils.Binary;
+using Utils.Parsing;
 
 namespace FileSystemBrackets
 {
@@ -36,5 +39,15 @@ namespace FileSystemBrackets
         {
             return Value?.GetHashCode() ?? 0;
         }
+
+        public byte[] ToBytes()
+        {
+            return Value.ToBytes();
+        }
+
+        public static ParsingResult<Bracket> Parse(byte[] bytes, Box<int> index)
+        {
+            return bytes.ParseToString(index).Map(s => new Bracket(s));
+        } 
     }
 }

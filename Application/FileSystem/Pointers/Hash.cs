@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Utils;
 using Utils.ArrayUtil;
+using Utils.Binary;
+using Utils.Parsing;
 
 namespace FileSystem.Pointers
 {
@@ -44,6 +47,16 @@ namespace FileSystem.Pointers
         public override int GetHashCode()
         {
             return Bits?.GetHashCode() ?? 0;
+        }
+
+        public byte[] ToBytes()
+        {
+            return this.Bits.ToBytes();
+        }
+
+        public static ParsingResult<Hash> Parse(byte[] bytes, Box<int> index)
+        {
+            return bytes.ToByteArray(index).Map(bits => new Hash(bits));
         }
     }
 }

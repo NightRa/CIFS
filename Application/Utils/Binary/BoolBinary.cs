@@ -1,5 +1,6 @@
 ﻿using Utils.ArrayUtil;
 using Utils.OptionUtil;
+using Utils.Parsing;
 using static Utils.OptionUtil.Opt;
 
 namespace Utils.Binary
@@ -12,17 +13,21 @@ namespace Utils.Binary
             return bit.Singleton();
         }
 
-        public static Option<bool> FromBytes(this byte[] @this, ref int index)
+        public static ParsingResult<bool> ToBool(this byte[] @this, Box<int> index)
         {
-            switch (@this[index++])
+            return ParsingResult.Parse(() =>
             {
-                case 0:
-                    return Some(false);
-                case 1:
-                    return Some(true);
-                default:
-                    return None<bool>();
-            }
+                byte value = @this[index.Value++];
+                switch (value)
+                {
+                    case 0:
+                        return ParsingResult.Pure(false);
+                    case 1:
+                        return ParsingResult.Pure(true);
+                    default:
+                        return ParsingResult.Error<bool>("");
+                }
+            }).Flatten();
         } 
     }
 }

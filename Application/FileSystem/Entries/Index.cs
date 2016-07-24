@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Utils;
+using Utils.OptionUtil;
+using Utils.Parsing;
 using Utils.StringUtil;
 
 namespace FileSystem.Entries
@@ -40,6 +43,15 @@ namespace FileSystem.Entries
         public static Index Default()
         {
             return new Index(Folder.Empty);
+        }
+
+        public byte[] ToBytes()
+        {
+            return MainFolder.ToBytes();
+        }
+        public static ParsingResult<Index> Parse(byte[] bytes, Box<int> index)
+        {
+            return Folder.Parse(bytes, index).Map(folder => new Index(folder));
         }
     }
 }

@@ -40,9 +40,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArrayUtil\ArrayExtensions.cs" />
+    <Compile Include="Binary\ArrayBinary.cs" />
     <Compile Include="Binary\CharBinary.cs" />
     <Compile Include="Binary\DictionaryBinary.cs" />
+    <Compile Include="Binary\IntBinary.cs" />
     <Compile Include="Binary\StringBinary.cs" />
+    <Compile Include="Box.cs" />
     <Compile Include="DictionaryUtil\DictionaryExtensions.cs" />
     <Compile Include="FileSystemUtil\FileSystemExtensions.cs" />
     <Compile Include="IEnumerableUtil\IEnumerableExtensions.cs" />
@@ -51,6 +54,10 @@
     <Compile Include="OptionUtil\Opt.cs" />
     <Compile Include="OptionUtil\Option.cs" />
     <Compile Include="OptionUtil\SomeOption.cs" />
+    <Compile Include="Parsing\Error.cs" />
+    <Compile Include="Parsing\Parse.cs" />
+    <Compile Include="Parsing\ParsingResult.cs" />
+    <Compile Include="Parsing\Result.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Binary\BoolBinary.cs" />
     <Compile Include="StringUtil\StringExtensions.cs" />
