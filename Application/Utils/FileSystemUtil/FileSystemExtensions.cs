@@ -2,7 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using IWshRuntimeLibrary;
 using static System.Environment;
+using File = System.IO.File;
 
 namespace Utils.FileSystemUtil
 {
@@ -49,6 +51,16 @@ namespace Utils.FileSystemUtil
         public static byte[] ReadAllBytes(this string filePath)
         {
             return File.ReadAllBytes(filePath);
+        }
+
+
+        public static void CreateShortcut(this string executablePath, string destinationPath, string iconPath)
+        {
+            var wsh = new IWshShell_Class();
+            var shortcut = wsh.CreateShortcut(destinationPath) as IWshShortcut;
+            shortcut.TargetPath = executablePath;
+            shortcut.IconLocation = iconPath;
+            shortcut.Save();
         }
     }
 }

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using System.Windows;
 using Agents;
 using CifsPreferences;
@@ -20,8 +18,14 @@ namespace CifsStartupApp
     {
         public static Index InitilizeCifs(Action<string> errorReports)
         {
+            var iconName = nameof(CifsStartupApp) + "." + nameof(Resources) + "." +
+                           nameof(Properties.Resources.EmbeddedIcon) + ".ico";
             if (!CifsDirectoryPath.DoesFolderExists())
                 CifsDirectoryPath.CreateDirectory(FileAttributes.Hidden);
+            if (!CifsIconPath.DoesFileExists())
+                using (var iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(iconName))
+                using (var fileStream = File.Create(CifsIconPath))
+                    iconStream.CopyTo(fileStream);
             var preferences = GetPreferences(errorReports);
             ApplyPreferences(preferences);
             return GetIndex(errorReports);
@@ -38,17 +42,8 @@ namespace CifsStartupApp
             if (!preferences.OpenOnStartup && isAppOnStartup)
                 startupFiles.First(f => f.Name.Equals(StartUpShortcutName)).Delete();
             if (preferences.OpenOnStartup && !isAppOnStartup)
-                CreateShortcut(Startup.GetPath().CombinePathWith(StartUpShortcutName),
-                    Process.GetCurrentProcess().MainModule.FileName);
-        }
-
-        private static void CreateShortcut(string destinationPath, string executablePath)
-        {
-            //  var wsh = new IWshShell_Class();
-            //  var shortcut = wsh.CreateShortcut(destinationPath) as IWshShortcut;
-            // shortcut.TargetPath = executablePath;
-            // shortcut.IconLocation = Properties.Resources.CifsIcon.
-            //  shortcut.Save();
+                Assembly.GetExecutingAssembly().Location
+                    .CreateShortcut(Startup.GetPath().CombinePathWith(StartUpShortcutName), CifsIconPath);
         }
 
         private static Index GetIndex(Action<string> errorReports)
@@ -91,7 +86,7 @@ namespace CifsStartupApp
 
         public static void EditPreferences()
         {
-            Action editPreferences = () => { };
+            Action editPreferences = () => {};
             editPreferences.DoAsyncBackground("EditPreferences");
         }
 

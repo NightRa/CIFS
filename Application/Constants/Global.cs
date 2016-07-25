@@ -13,11 +13,12 @@ namespace Constants
         public static TimeSpan AgentSleepTime => TimeSpan.FromMilliseconds(4.0);
 
         public static string CifsDirectoryPath => MyDocuments.GetPath().CombinePathWith("CIFS");
+        public static string CifsIconPath => CifsDirectoryPath.CombinePathWith("CifsIcon.ico");
         public static string CifsPreferencesDataPath => CifsDirectoryPath.CombinePathWith("Preferences.dat");
         public static string CifsIndexDataPath => CifsDirectoryPath.CombinePathWith("Index.dat");
         public static char[] AvailableDriverChars()
         {
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             var driverChars = DriveInfo.GetDrives().Select(d => d.Name.First()).ToArray();
             return chars.Where(c => !driverChars.Contains(c)).ToArray();
         }

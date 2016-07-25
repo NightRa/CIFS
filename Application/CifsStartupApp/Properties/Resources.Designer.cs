@@ -69,5 +69,15 @@ namespace CifsStartupApp.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon EmbeddedIcon {
+            get {
+                object obj = ResourceManager.GetObject("EmbeddedIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }
