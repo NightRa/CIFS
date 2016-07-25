@@ -40,6 +40,9 @@
     <Reference Include="FileSystem">
       <HintPath>..\FileSystem\bin\Debug\FileSystem.dll</HintPath>
     </Reference>
+    <Reference Include="Gui">
+      <HintPath>..\Gui\bin\Debug\Gui.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -71,6 +74,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DriverCharComboBoxItem.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
