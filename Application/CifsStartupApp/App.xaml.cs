@@ -15,10 +15,8 @@ namespace CifsStartupApp
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
-            //create the notifyicon (it's a resource declared in NotifyIconResources.xaml
             notifyIcon = (TaskbarIcon)FindResource("NotifyIcon");
-            var index = Initilization.InitilizeCifs(s => MessageBox.Show(s));
+            Initilization.InitilizeCifs();
         }
 
         protected override void OnExit(ExitEventArgs e)

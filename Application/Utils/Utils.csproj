@@ -50,6 +50,9 @@
     <Compile Include="DictionaryUtil\DictionaryExtensions.cs" />
     <Compile Include="FileSystemUtil\FileSystemExtensions.cs" />
     <Compile Include="IEnumerableUtil\IEnumerableExtensions.cs" />
+    <Compile Include="LogHandling\Log.cs" />
+    <Compile Include="LogHandling\LogMessage.cs" />
+    <Compile Include="LogHandling\MessageEventHandler.cs" />
     <Compile Include="OptionUtil\NoneOption.cs" />
     <Compile Include="OptionUtil\NoneOptionExceptioncs.cs" />
     <Compile Include="OptionUtil\Opt.cs" />

@@ -17,5 +17,17 @@ namespace Utils.StringUtil
                 .Select(x => tab + x)
                 .MkString(NewLine);
         }
+        public static string TakeWithPadding(this string @this, int amountToTake, char pad = ' ')
+        {
+            var chars = 
+                @this
+                .AsEnumerable()
+                .Concat(Enumerable.Repeat(pad, amountToTake))
+                .Take(amountToTake);
+            return new string(chars.ToArray());
+
+
+
+        }
     }
 }

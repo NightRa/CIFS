@@ -13,14 +13,15 @@ namespace Constants
     {
         public static FileInfo FindFilePath()
         {
-            if (CifsPreferencesDataPath.DoesFileExists())
+            Action<string> log = s => { };
+            if (CifsPreferencesDataPath.DoesFileExists(log))
                 return CifsPreferencesDataPath.GetFileInfo();
-            if (CifsIndexDataPath.DoesFileExists())
+            if (CifsIndexDataPath.DoesFileExists(log))
                 return CifsIndexDataPath.GetFileInfo();
-            var maybeFile1 = Desktop.GetPath().TryFindFileInFolder();
-            var maybeFile2 = MyMusic.GetPath().TryFindFileInFolder();
-            var maybeFile3 = MyPictures.GetPath().TryFindFileInFolder();
-            var maybeFile4 = MyDocuments.GetPath().TryFindFileInFolder();
+            var maybeFile1 = Desktop.GetPath().TryFindFileInFolder(log);
+            var maybeFile2 = MyMusic.GetPath().TryFindFileInFolder(log);
+            var maybeFile3 = MyPictures.GetPath().TryFindFileInFolder(log);
+            var maybeFile4 = MyDocuments.GetPath().TryFindFileInFolder(log);
             return 
                 maybeFile1.OrElse(
                     maybeFile2.OrElse(
@@ -31,14 +32,14 @@ namespace Constants
 
         public static DirectoryInfo FindDirectoryPath()
         {
-            if (CifsDirectoryPath.DoesFolderExists())
+            if (CifsDirectoryPath.DoesFolderExists(s => { }))
                 return CifsDirectoryPath.GetDirectoryInfo();
             return MyDocuments.GetPath().GetDirectoryInfo();
         }
 
-        private static Option<FileInfo> TryFindFileInFolder(this string folderPath)
+        private static Option<FileInfo> TryFindFileInFolder(this string folderPath, Action<string> log)
         {
-            if (folderPath.DoesFolderExists())
+            if (folderPath.DoesFolderExists(log))
                 if (folderPath.GetDirectoryInfo().EnumerateFiles().Any())
                     return Some(folderPath.GetDirectoryInfo().EnumerateFiles().First());
             return None<FileInfo>();
