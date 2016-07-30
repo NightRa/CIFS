@@ -1,30 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using Agents;
+﻿using Agents;
 using Agents.AdministratorMessages;
 using Agents.DokanMessages;
+using Agents.DokanSupervisorMessages;
 
 namespace Dokan
 {
     internal static class ProccessMessages
     {
-        public static void ProccessMessage(this QuitDokanMessage @this, char driverChar)
+        public static void ProccessMessage(this QuitDokanRequestMessage @this, char driverChar)
         {
             DokanNet.Dokan.Unmount(driverChar);
         }
-        public static void ProccessMessage(this DokanThrewExceptionMessage @this, char driverChar, SendMessage<AdministratorMessage> sendMeesage, out bool shouldQuit)
+        public static void ProccessMessage(this DokanThrewExceptionMessage @this, SendMessage<AdministratorMessage> sendMeesage)
         {
-            DokanNet.Dokan.Unmount(driverChar);
             sendMeesage(new InternalErrorMessage(@this.Exception));
-            shouldQuit = true;
         }
-        public static void ProccessMessage(this UnmountedSuccessfullyMessage @this, SendMessage<AdministratorMessage> sendMeesage, out bool shouldQuit)
+        public static void ProccessMessage(this UnmountedSuccessfullyMessage @this, SendMessage<AdministratorMessage> sendMeesage)
         {
             sendMeesage(new DokanExitedSuccessfullyMessage());
-            shouldQuit = true;
         }
     }
 }

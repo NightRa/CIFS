@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using Utils.OptionUtil;
 using static Utils.OptionUtil.Opt;
 
@@ -15,9 +16,13 @@ namespace Agents
         public event MessageEventHandler OnMessageRecieved;
         public event MessageEventHandler OnMessageSent;
 
-        public Mail()
+        public Mail(Action<string> log)
         {
             this.Inbox = new ConcurrentQueue<TMessage>();
+            log("Creating Mail for messages of type " + typeof (TMessage).FullName);
+            Func<Message, string> showMessage = message => message.MessageTime.TimeOfDay.ToString() + " - " + message.AsString();
+            this.OnMessageRecieved += message => log("Recieved " + showMessage(message));
+            this.OnMessageSent += message => log("Sent " + showMessage(message));
         }
 
         public Option<TMessage> TryGetMessage()

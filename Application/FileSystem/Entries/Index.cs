@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Utils;
 using Utils.OptionUtil;
 using Utils.Parsing;
@@ -11,6 +12,7 @@ namespace FileSystem.Entries
 {
     public sealed class Index
     {
+
         public Folder MainFolder { get; }
 
         public Index(Folder mainFolder)

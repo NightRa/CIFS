@@ -48,7 +48,9 @@
     <Compile Include="Binary\StringBinary.cs" />
     <Compile Include="Box.cs" />
     <Compile Include="DictionaryUtil\DictionaryExtensions.cs" />
+    <Compile Include="DoubleUtil\DoubleExtensions.cs" />
     <Compile Include="FileSystemUtil\FileSystemExtensions.cs" />
+    <Compile Include="FunctionUtil\FuncExtensions.cs" />
     <Compile Include="IEnumerableUtil\IEnumerableExtensions.cs" />
     <Compile Include="LogHandling\Log.cs" />
     <Compile Include="LogHandling\LogMessage.cs" />
@@ -64,7 +66,9 @@
     <Compile Include="Parsing\Result.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Binary\BoolBinary.cs" />
+    <Compile Include="StreamUtil\StreamExtensions.cs" />
     <Compile Include="StringUtil\StringExtensions.cs" />
+    <Compile Include="TaskUtils\TaskExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">

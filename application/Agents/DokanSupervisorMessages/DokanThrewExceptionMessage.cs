@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Agents.DokanMessages
+namespace Agents.DokanSupervisorMessages
 {
-    public sealed class DokanThrewExceptionMessage : DokanMessage
+    public sealed class DokanThrewExceptionMessage : DokanSupervisorMessage
     {
         public Exception Exception { get; }
 

@@ -34,7 +34,7 @@ namespace Utils.FileSystemUtil
         public static bool DoesFileExists(this string filePath, Action<string> log)
         {
             var doesFileExist = File.Exists(filePath);
-            log("Folder " + filePath + " " + (doesFileExist ? "" : "doesn't ") + "exist");
+            log("Folder " + filePath + " " + (doesFileExist ? "" : "doesn't ") + "exists");
             return doesFileExist;
         }
         public static void CreateFile(this string filePath, byte[] bytes, Action<string> log)
@@ -46,7 +46,7 @@ namespace Utils.FileSystemUtil
         public static bool DoesFolderExists(this string folderPath, Action<string> log)
         {
             var doesFolderExist = Directory.Exists(folderPath);
-            log("Folder " + folderPath + " " + (doesFolderExist ? "" : "doesn't ") + "exist");
+            log("Folder " + folderPath + " " + (doesFolderExist ? "" : "doesn't ") + "exists");
             return doesFolderExist;
         }
         public static void CreateDirectory(this string folderPath, FileAttributes additionalAttributes, Action<string> log)

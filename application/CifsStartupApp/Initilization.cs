@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using Agents;
+using Agents.AdministratorMessages;
 using CifsPreferences;
 using FileSystem.Entries;
 using Utils;
@@ -16,18 +17,14 @@ namespace CifsStartupApp
 {
     public static class Initilization
     {
-        public static void InitilizeCifs()
+        public static void InitilizeCifs(Mail<AdministratorMessage> mail, Action<string> log)
         {
-            var logFileLocation = Desktop.GetPath().CombinePathWith("log.txt");
-            Action<string> log = Log.InitilizeInteractive(logFileLocation);
-
-            CifsDirectoryPath.CreateDirectoryIfDoesntExist(FileAttributes.Hidden, log);
             InitilizeIcon(log);
             var preferences = GetPreferences(log);
             ApplyPreferences(preferences, log);
             var index = GetIndex(log);
 
-            Action loopAction = () => AdministratorAgent.Loop(index, preferences, log);
+            Action loopAction = () => AdministratorAgent.Loop(index, preferences, mail, log);
             loopAction.DoAsyncBackground("AdministratorAgentLoopThread");
         }
 
@@ -91,13 +88,14 @@ namespace CifsStartupApp
 
         public static void ShowCifsInExplorer()
         {
-            Action openExplorer = () => Process.Start(MyDocuments.GetPath());
+            var path = GetPreferences(_ => { }).DriverChar + ":\\";
+            Action openExplorer = () => Process.Start(path);
             openExplorer.DoAsyncBackground("CifsExplorerProcessOpener");
         }
 
         public static void EditPreferences()
         {
-            Action editPreferences = () => {};
+            Action editPreferences = () => MessageBox.Show("Editing preferences :O");
             editPreferences.DoAsyncBackground("EditPreferences");
         }
 

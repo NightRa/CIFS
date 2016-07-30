@@ -1,49 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using DokanNet;
 using FileSystem.Entries;
 using Agents;
 using Agents.AdministratorMessages;
-using Agents.DokanMessages;
+using Agents.DokanSupervisorMessages;
 using Constants;
 
 namespace Dokan
 {
     public static class RunDokan
     {
-       // char driverChar = 'd';
-        //Index index = new Index(null);
-       // DokanOptions dokanOptions = DokanOptions.DebugMode;
-       // int numThreads = 5;
-        public static void MountDokan(Index index, char driverChar, DokanOptions dokanOptions, int numThreads, SendMessage<AdministratorMessage> sendMessage)
+        public static void MountDokan(Index index,
+                                      char driverChar,
+                                      DokanOptions dokanOptions,
+                                      int numThreads,
+                                      SendMessage<AdministratorMessage> sendMessage,
+                                      Mail<DokanSupervisorMessage> inbox,
+                                      Action<string> log)
         {
-            Mail<DokanMessage> dokanMail = new Mail<DokanMessage>();
-
-            Action mountDokan = () =>
-            {
-                try
-                {
-                    CifsDriverInstance instance = new CifsDriverInstance(index);
-                    instance.Mount(driverChar + ":\\", dokanOptions, numThreads);
-                    dokanMail.Publish(new UnmountedSuccessfullyMessage());
-                }
-                catch (Exception e)
-                {
-                    dokanMail.Publish(new DokanThrewExceptionMessage(e));
-                }
-            };
-
-            Action superviseDokan = () => SuperviseDokanLoop(sendMessage, dokanMail, driverChar);
-
-            mountDokan.DoAsyncBackground("DokanThread");
+            Action superviseDokan = () => SuperviseDokanLoop(sendMessage, driverChar, inbox, log);
+            Action mountDokan = () => Mount(inbox.Publish, driverChar, index, numThreads, dokanOptions, log);
+            mountDokan.DoAsyncBackground("MountDokanThread");
             superviseDokan.DoAsyncBackground("SuperviseDokanLoop");
 
         }
 
-        public static void SuperviseDokanLoop(SendMessage<AdministratorMessage> sendMessage, Mail<DokanMessage> inbox, char driverChar)
+        private static void SuperviseDokanLoop(SendMessage<AdministratorMessage> administrator, char driverChar, Mail<DokanSupervisorMessage> inbox, Action<string> log)
         {
             while (true)
             {
@@ -53,16 +36,45 @@ namespace Dokan
                 else
                 {
                     var mail = maybeMail.ValueUnsafe;
-                    var quitMessage = mail as QuitDokanMessage;
+                    
+                    var quitMessage = mail as QuitDokanRequestMessage;
                     var dokanThrewExceptionMessage = mail as DokanThrewExceptionMessage;
                     var dokanUnMountedSuccessfullyMessage = mail as UnmountedSuccessfullyMessage;
-                    bool shouldQuit = false;
+                    dokanThrewExceptionMessage?.ProccessMessage(administrator);
+                    dokanUnMountedSuccessfullyMessage?.ProccessMessage(administrator);
                     quitMessage?.ProccessMessage(driverChar);
-                    dokanThrewExceptionMessage?.ProccessMessage(driverChar, sendMessage, out shouldQuit);
-                    dokanUnMountedSuccessfullyMessage?.ProccessMessage(sendMessage, out shouldQuit);
-                    if (shouldQuit)
-                        return;
+                    if (quitMessage != null)
+                        break;
                 }
+            }
+        }
+
+        private static void Main(string[] args)
+        {
+            try
+            {
+                Mount(_ => {}, 'g', Index.Default(), 5, DokanOptions.DebugMode, _ => { });
+            }
+            finally
+            {
+                DokanNet.Dokan.Unmount('g');
+            }
+        }
+        private static void Mount(SendMessage<DokanSupervisorMessage> reportProgress, char driverChar, Index index,
+            int numThreads, DokanOptions dokanOptions, Action<string> log)
+        {
+            try
+            {
+                CifsDriverInstance instance = new CifsDriverInstance(index, log);
+                log("Trying to mount Dokan: " + driverChar + ":\\");
+                instance.Mount(driverChar + ":\\", dokanOptions, numThreads);
+                log("Dokan Unmounted");
+                reportProgress(new UnmountedSuccessfullyMessage());
+            }
+            catch (Exception e)
+            {
+                log("Dokan threw an exception: " + e.Message);
+                reportProgress(new DokanThrewExceptionMessage(e));
             }
         }
     }

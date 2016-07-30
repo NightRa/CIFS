@@ -1,14 +1,13 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
-using System.Security.Policy;
-using System.Text;
+using System.Threading;
 using Constants;
 using DokanNet;
 using FileSystem.Entries;
+using FileSystem.Pointers;
 using FileSystemBrackets;
 using Utils.ArrayUtil;
 using Utils.OptionUtil;
@@ -22,27 +21,22 @@ namespace Dokan
                                               FileAccess.Execute |
                                               FileAccess.GenericExecute | FileAccess.GenericWrite | FileAccess.GenericRead;
         public Index Index { get; set; }
+        public Action<string> Log { get; }
         public Folder MainFolder => Index.MainFolder;
-        public CifsDriverInstance(Index index)
+        public CifsDriverInstance(Index index, Action<string> log)
         {
+            this.Log = log;
             this.Index = index;
-        }
-        private static void WriteToLog(string data)
-        {
-            if (data.Contains("*"))
-                Console.WriteLine(data);
         }
 
         public NtStatus CreateFile(string fileName, FileAccess fileAccess, FileShare share, FileMode mode,
             FileOptions options,
             FileAttributes attributes, DokanFileInfo info)
         {
-            WriteToLog("CreateFile " + fileName);
+            Log("CreateFile " + fileName + ", delete on close: " + info.DeleteOnClose);
             var maybeAccess = EntryAccessBrackets.FromPath(fileName);
             if (fileName.EndsWith("desktop.ini"))
                 return DokanResult.Success;
-            if (info.DeleteOnClose)
-                WriteToLog("**** CreateFile: Delete on close, " + fileName);
 
             bool readWriteAttributes = (fileAccess & DataAccess) == 0;
             var folder = MainFolder.GetFolder(fileName.AsBrackets());
@@ -67,8 +61,7 @@ namespace Dokan
                         return DokanResult.Success;
                 }
             }
-
-            // info: File
+            
             switch (mode)
             {
                 case FileMode.Open:
@@ -90,9 +83,8 @@ namespace Dokan
                     break;
             }
             info.Context = new object();
-           // if (maybeAccess.IsSome)
-           //     lock (Rand)
-            //        MainFolder.AddOrUpdateFile(maybeAccess.ValueUnsafe, new FileHash(Hash.Random(60, Rand)));
+            if (maybeAccess.IsSome)
+                MainFolder.AddOrUpdateFile(maybeAccess.ValueUnsafe, new FileHash(Hash.Random(60, new Random())));
 
             return DokanResult.Success;
 
@@ -100,12 +92,11 @@ namespace Dokan
 
         public void Cleanup(string fileName, DokanFileInfo info)
         {
-            WriteToLog("Cleanup " + fileName);
+            Log("Cleanup " + fileName + ", delete request: " + info.DeleteOnClose);
             info.Context = null;
 
             if (info.DeleteOnClose)
             {
-                WriteToLog("**** Cleanup with delete request: " + fileName + ", isDirectory: " + info.IsDirectory);
                 EntryAccessBrackets.FromPath(fileName).Iter(access =>
                 {
                     if (info.IsDirectory)
@@ -118,17 +109,13 @@ namespace Dokan
 
         public void CloseFile(string fileName, DokanFileInfo info)
         {
-            WriteToLog("CloseFile " + fileName);
-            if (info.DeleteOnClose)
-            {
-                WriteToLog("**** Close with delete request: " + fileName + ", isDirectory: " + info.IsDirectory);
-            }
+            Log("CloseFile " + fileName + ", delete request: " + info.DeleteOnClose);
             info.Context = null;
         }
 
         public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
         {
-            WriteToLog("************ ReadFile " + fileName + ", Buffer length: " + buffer.Length);
+            Log("ReadFile " + fileName + ", Buffer length: " + buffer.Length + ", offset: " + offset);
             var readBytes = 0;
             EntryAccessBrackets.FromPath(fileName)
                 .FlatMap(access => MainFolder.GetFile(access))
@@ -145,7 +132,7 @@ namespace Dokan
 
         public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)
         {
-            WriteToLog("****** WriteFile " + fileName + ", buffer length: " + buffer.Length);
+            Log("WriteFile " + fileName + ", buffer length: " + buffer.Length + ", offset: " + offset);
             //   int writtenBytes = 0;
 
             //     EntryAccessBrackets.FromPath(fileName).Iter(access =>
@@ -160,13 +147,13 @@ namespace Dokan
 
         public NtStatus FlushFileBuffers(string fileName, DokanFileInfo info)
         {
-            WriteToLog("***** FlushFileBuffers " + fileName);
+            Log("FlushFileBuffers of " + fileName);
             return DokanResult.Success;
         }
 
         public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, DokanFileInfo info)
         {
-            WriteToLog("GetFileInformation " + fileName);
+            Log("GetFileInformation " + fileName);
             var fileInformation = Folder.Empty.GetInfo(string.Empty);
 
             fileInfo =
@@ -180,7 +167,7 @@ namespace Dokan
 
         public NtStatus FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)
         {
-            WriteToLog("*** ---- FindFiles " + fileName);
+            Log("FindFiles " + fileName);
             var brackets = fileName.AsBrackets();
             var folder = MainFolder.GetFolder(brackets);
             if (folder.IsSome)
@@ -203,19 +190,19 @@ namespace Dokan
 
         public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, DokanFileInfo info)
         {
-            WriteToLog("*** SetFileAttributes " + fileName);
+            Log("SetFileAttributes " + fileName);
             return DokanResult.Success;
         }
 
         public NtStatus SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, DokanFileInfo info)
         {
-            WriteToLog("*** SetFileTime " + fileName);
+            Log("SetFileTime " + fileName);
             return DokanResult.Success;
         }
 
         public NtStatus DeleteFile(string fileName, DokanFileInfo info)
         {
-            WriteToLog("*** DeleteFile " + fileName);
+            Log("DeleteFile " + fileName);
             var access = EntryAccessBrackets.FromPath(fileName);
             var fileExists = access.FlatMap(MainFolder.GetFile).IsSome;
             if (!fileExists)
@@ -226,7 +213,7 @@ namespace Dokan
 
         public NtStatus DeleteDirectory(string fileName, DokanFileInfo info)
         {
-            WriteToLog("*** DeleteFile " + fileName);
+            Log("DeleteDirectory " + fileName);
             var access = EntryAccessBrackets.FromPath(fileName);
             var folderExists = MainFolder.GetFolder(fileName.AsBrackets()).IsSome;
             if (!folderExists)
@@ -240,7 +227,7 @@ namespace Dokan
 
         public NtStatus MoveFile(string oldName, string newName, bool replace, DokanFileInfo info)
         {
-            WriteToLog($"****** MoveFile old: {oldName}, new: {newName}, replace: {replace}");
+            Log($"MoveFile old: {oldName}, new: {newName}, replace: {replace}");
 
             var oldAccess = EntryAccessBrackets.FromPath(oldName);
             var newAccess = EntryAccessBrackets.FromPath(newName);
@@ -283,31 +270,31 @@ namespace Dokan
 
         public NtStatus SetEndOfFile(string fileName, long length, DokanFileInfo info)
         {
-            WriteToLog("****** SetEndOfFile " + fileName);
+            Log("SetEndOfFile " + fileName + ", length: " + length);
             return DokanResult.Success;
         }
 
         public NtStatus SetAllocationSize(string fileName, long length, DokanFileInfo info)
         {
-            WriteToLog("***** SetAllocationSize " + fileName);
+            Log("SetAllocationSize " + fileName + " length: " + length);
             return DokanResult.Success;
         }
 
         public NtStatus LockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
-            WriteToLog("**** LockFile " + fileName);
+            Log("LockFile " + fileName + ", length: " + length + ", offset: " + offset);
             return DokanResult.Success;
         }
 
         public NtStatus UnlockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
-            WriteToLog("**** UnlockFile " + fileName);
+            Log("UnlockFile " + fileName + ", length: " + length + ", offset: " + offset);
             return DokanResult.Success;
         }
 
         public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, DokanFileInfo info)
         {
-            WriteToLog("GetDiskFreeSpace");
+            Log("GetDiskFreeSpace");
             totalNumberOfBytes = 1024L * 1024L;
             freeBytesAvailable = totalNumberOfBytes;
             totalNumberOfFreeBytes = totalNumberOfBytes;
@@ -316,7 +303,7 @@ namespace Dokan
 
         public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, DokanFileInfo info)
         {
-            WriteToLog("GetVolumeInformation");
+            Log("GetVolumeInformation");
             volumeLabel = "DOKAN";
             fileSystemName = "NTFS";
 
@@ -326,7 +313,7 @@ namespace Dokan
 
         public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)
         {
-            WriteToLog("***** GetFileSecurity " + fileName);
+            Log("GetFileSecurity " + fileName);
             security = new FileSecurity();
             try
             {
@@ -346,25 +333,28 @@ namespace Dokan
 
         public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)
         {
-            WriteToLog("****** SetFileSecurity " + fileName);
+            Log("SetFileSecurity " + fileName);
             return DokanResult.Success;
         }
 
         public NtStatus Mounted(DokanFileInfo info)
         {
-            WriteToLog("Mounted");
+            //Thread.CurrentThread.Name = "DokanThread";
+            Log("Dokan mounted");
+            Global.DokanSemaphore.WaitOne();
             return DokanResult.Success;
         }
 
         public NtStatus Unmounted(DokanFileInfo info)
         {
-            WriteToLog("Unmounted");
+            Global.DokanSemaphore.Release();
+            Log("Dokan unmounted");
             return DokanResult.Success;
         }
 
         public NtStatus FindStreams(string fileName, out IList<FileInformation> streams, DokanFileInfo info)
         {
-            WriteToLog("****** FindStreams " + fileName);
+            Log("FindStreams " + fileName);
             streams = new FileInformation[0];
             return DokanResult.Success;
         }

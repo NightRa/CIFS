@@ -25,7 +25,7 @@ namespace CifsPreferences
 
         public static Preferences Default()
         {
-            return new Preferences(openOnStartup: true, driverChar: DefaultDriverChar);
+            return new Preferences(openOnStartup: false, driverChar: DefaultDriverChar);
         }
 
         public byte[] ToBytes()

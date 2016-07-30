@@ -34,14 +34,22 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Agents">
-      <HintPath>..\Messaging\bin\Debug\Agents.dll</HintPath>
+    <Reference Include="Agents, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Agents\bin\Debug\Agents.dll</HintPath>
     </Reference>
     <Reference Include="CifsPreferences">
       <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.exe</HintPath>
     </Reference>
     <Reference Include="Constants">
       <HintPath>..\Constants\bin\Debug\Constants.dll</HintPath>
+    </Reference>
+    <Reference Include="Dokan">
+      <HintPath>..\Dokan\bin\Debug\Dokan.exe</HintPath>
+    </Reference>
+    <Reference Include="DokanNet, Version=1.0.8.0, Culture=neutral, PublicKeyToken=3709aaa01df28a9e, processorArchitecture=MSIL">
+      <HintPath>..\packages\DokanNet.1.0.8.0\lib\net40\DokanNet.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="FileSystem">
       <HintPath>..\FileSystem\bin\Debug\FileSystem.dll</HintPath>
@@ -113,6 +121,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\CifsIcon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

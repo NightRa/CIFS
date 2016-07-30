@@ -46,8 +46,11 @@ namespace Utils
             var logFile = File.CreateText(logFileLocation);
             log.MessageAdded += (sender, args) =>
             {
-                logFile.WriteLine(args.LogMessage.ToString());
-                logFile.Flush();
+                lock (logFile)
+                {
+                    logFile.WriteLine(args.LogMessage.ToString());
+                    logFile.Flush();
+                }
             };
             return log.AddMessage;
         }
