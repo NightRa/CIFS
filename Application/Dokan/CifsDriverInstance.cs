@@ -9,7 +9,9 @@ using DokanNet;
 using FileSystem.Entries;
 using FileSystem.Pointers;
 using FileSystemBrackets;
+using Utils;
 using Utils.ArrayUtil;
+using Utils.FileSystemUtil;
 using Utils.OptionUtil;
 using FileAccess = DokanNet.FileAccess;
 
@@ -220,7 +222,14 @@ namespace Dokan
                 return DokanResult.FileNotFound;
             var isEmpty = MainFolder.GetFolder(fileName.AsBrackets()).ValueUnsafe.IsEmpty;
             if (!isEmpty)
+            {
+                Log("$$$");
                 return DokanResult.DirectoryNotEmpty;
+            }
+            else
+            {
+                Log("@@@@");
+            }
             access.Iter(MainFolder.DeleteFolder);
             return DokanResult.Success;
         }
@@ -339,16 +348,22 @@ namespace Dokan
 
         public NtStatus Mounted(DokanFileInfo info)
         {
-            //Thread.CurrentThread.Name = "DokanThread";
+            if (Global.DokanRunningObject.IsHeld())
+            {
+                Log("DEADLOCK: mounting while dokan is running");
+                return DokanResult.Error;
+            }
+            Monitor.Enter(Global.DokanRunningObject);
             Log("Dokan mounted");
-            Global.DokanSemaphore.WaitOne();
             return DokanResult.Success;
         }
 
         public NtStatus Unmounted(DokanFileInfo info)
         {
-            Global.DokanSemaphore.Release();
             Log("Dokan unmounted");
+            var path = Global.CifsIndexDataPath;
+            path.CreateFile(Index.ToBytes(), _ => Log("Caching Index to file " + path));
+            Monitor.Exit(Global.DokanRunningObject);
             return DokanResult.Success;
         }
 

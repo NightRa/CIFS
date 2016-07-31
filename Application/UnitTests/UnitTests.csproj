@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CifsPreferences">
-      <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.exe</HintPath>
+      <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.dll</HintPath>
     </Reference>
     <Reference Include="FileSystem">
       <HintPath>..\FileSystem\bin\Debug\FileSystem.dll</HintPath>

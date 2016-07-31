@@ -13,12 +13,13 @@ namespace Utils.Binary
     {
         public static byte[] ToBytes(this char @this)
         {
+            //throw new ArgumentException();
             return ((int)@this).ToBytes();
         }
 
         public static ParsingResult<char> ToChar(this byte[] @this, Box<int> index)
         {
-            return @this.ToInt(index).Map(num => (char)num);
+            return  @this.ToInt(index).Map(num => (char)num);
         }
     }
 }

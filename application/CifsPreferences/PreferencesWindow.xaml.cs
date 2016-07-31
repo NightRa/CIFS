@@ -1,18 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using Constants;
+using Utils;
 using Utils.ArrayUtil;
 using Utils.IEnumerableUtil;
-using static System.Environment;
 using Utils.StringUtil;
+using static System.Environment;
 
 namespace CifsPreferences
 {
-    public partial class MainWindow : Window
+    /// <summary>
+    /// Interaction logic for PreferencesWindow.xaml
+    /// </summary>
+    public partial class PreferencesWindow : Window
     {
         private Preferences currentPrefferences;
-        public Preferences OriginalPreferences { get; set; }
+        public Preferences OriginalPreferences { get; }
 
         public Preferences CurrentPrefferences
         {
@@ -23,12 +36,16 @@ namespace CifsPreferences
                 ApplyButton.IsEnabled = !currentPrefferences.Equals(OriginalPreferences);
             }
         }
+        public Action<Preferences> OnPreferencesApplied { get; }
+        public Action<string> Log { get; }
 
-        public MainWindow()
+        public PreferencesWindow(Preferences originialPreferences, Action<Preferences> onPreferencesApplied, Action<string> log)
         {
             InitializeComponent();
-            this.OriginalPreferences = Preferences.Default();
-            this.CurrentPrefferences = Preferences.Default();
+            Log = log;
+            this.OnPreferencesApplied = onPreferencesApplied;
+            this.OriginalPreferences = originialPreferences;
+            this.CurrentPrefferences = originialPreferences;
             DriverChars.Items.Clear();
             Global.AvailableDriverChars()
                 .Where(ch => ch != currentPrefferences.DriverChar)
@@ -53,15 +70,14 @@ namespace CifsPreferences
 
         private void ApplyButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var preferences = this.CurrentPrefferences;
+            OnPreferencesApplied(this.CurrentPrefferences);
             this.Close();
-            MessageBox.Show("Preferences Applied:" + NewLine + preferences.ToString().AddTabs());
+            MessageBox.Show("Preferences Applied:" + NewLine + CurrentPrefferences.ToString().AddTabs());
         }
-        
 
         private void MountOnStartupCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            CurrentPrefferences = CurrentPrefferences.WithOpenOnStartup(MountOnStartupCheckBox.IsChecked ?? true);
+            CurrentPrefferences = CurrentPrefferences.WithOpenOnStartup(MountOnStartupCheckBox.IsChecked ?? false);
         }
 
         private void OnDriverCharChanged(char ch)

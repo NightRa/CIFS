@@ -11,7 +11,7 @@ namespace Utils
 
         public LogMessage(string threadName, DateTime time, string message)
         {
-            ThreadName = threadName;
+            ThreadName = string.IsNullOrEmpty(threadName) ? "DokanThread" : threadName;
             Time = time;
             Message = message;
         }

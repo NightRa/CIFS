@@ -21,8 +21,8 @@ namespace Dokan
         {
             Action superviseDokan = () => SuperviseDokanLoop(sendMessage, driverChar, inbox, log);
             Action mountDokan = () => Mount(inbox.Publish, driverChar, index, numThreads, dokanOptions, log);
-            mountDokan.DoAsyncBackground("MountDokanThread");
-            superviseDokan.DoAsyncBackground("SuperviseDokanLoop");
+            mountDokan.DoAsyncBackground("MountDokanThread", log);
+            superviseDokan.DoAsyncBackground("SuperviseDokanLoop", log);
 
         }
 

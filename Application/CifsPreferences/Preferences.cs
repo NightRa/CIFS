@@ -77,6 +77,7 @@ namespace CifsPreferences
         {
             return new Preferences(newOpenOnStartup, this.DriverChar);
         }
+
         public Preferences WithDriverChar(char newDriverChar)
         {
             return new Preferences(this.OpenOnStartup, newDriverChar);

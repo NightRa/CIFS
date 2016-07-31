@@ -13,7 +13,7 @@ namespace Constants
         public static DateTime FoldersTime => new DateTime(2016, 7, 20);
         public static TimeSpan AgentSleepTime => TimeSpan.FromMilliseconds(4.0);
 
-        public static readonly Semaphore DokanSemaphore = new Semaphore(initialCount: 1, maximumCount: 1, name: "IsDokanAliveSemaphore");
+        public static readonly object DokanRunningObject = new object();
 
         public static string CifsDirectoryPath => MyDocuments.GetPath().CombinePathWith("CIFS");
         public static string CifsIconPath => CifsDirectoryPath.CombinePathWith("CifsIcon.ico");
@@ -21,12 +21,12 @@ namespace Constants
         public static string CifsIndexDataPath => CifsDirectoryPath.CombinePathWith("Index.dat");
         public static char[] AvailableDriverChars()
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string chars = "BCDEFGHIJKLMNOPQRSTUVWXYZ"; /* 'A' is not allowed! */
             var driverChars = DriveInfo.GetDrives().Select(d => d.Name.First()).ToArray();
             return chars.Where(c => !driverChars.Contains(c)).ToArray();
         }
 
-        public static char DefaultDriverChar => AvailableDriverChars().Last();
+        public static char DefaultDriverChar => AvailableDriverChars().First();
         public static string StartUpShortcutName => "CIFS.lnk";
     }
 }

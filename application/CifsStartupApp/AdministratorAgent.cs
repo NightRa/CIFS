@@ -9,6 +9,8 @@ using Constants;
 using Dokan;
 using DokanNet;
 using FileSystem.Entries;
+using Utils.Binary;
+using Utils.FileSystemUtil;
 using static System.Environment;
 
 namespace CifsStartupApp
@@ -19,7 +21,6 @@ namespace CifsStartupApp
         {
             var dokanMail = new Mail<DokanSupervisorMessage>(log);
             RunDokan.MountDokan(index, preferences.DriverChar, DokanOptions.DebugMode, 5, inbox.Publish, dokanMail, log);
-
             while (true)
             {
                 var maybeMessage = inbox.TryGetMessage();

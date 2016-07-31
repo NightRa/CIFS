@@ -8,10 +8,10 @@ namespace CifsStartupApp.IconHandling
         /// Shuts down the application.
         /// </summary>
         public ICommand ExitCifsCommand =>
-            new DelegateCommand(Initilization.CloseApp, () => true);
+            new DelegateCommand(App.CloseApp, App.IsDokanRunning);
         public ICommand ShowCifsInExplorerCommand =>
-            new DelegateCommand(Initilization.ShowCifsInExplorer, () => true);
+            new DelegateCommand(App.ShowCifsInExplorer, App.IsDokanRunning);
         public ICommand EditPreferencesCommand =>
-            new DelegateCommand(Initilization.EditPreferences, () => true);
+            new DelegateCommand(App.EditPreferences, App.IsDokanRunning);
     }
 }

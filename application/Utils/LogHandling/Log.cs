@@ -38,7 +38,7 @@ namespace Utils
 
             return str.ToString();
         }
-
+        private static readonly object fileLock = new object();
         public static Action<string> InitilizeInteractive(string logFileLocation)
         {
             var log = new Log();
@@ -46,7 +46,7 @@ namespace Utils
             var logFile = File.CreateText(logFileLocation);
             log.MessageAdded += (sender, args) =>
             {
-                lock (logFile)
+                lock (fileLock)
                 {
                     logFile.WriteLine(args.LogMessage.ToString());
                     logFile.Flush();

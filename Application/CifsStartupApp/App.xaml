@@ -6,9 +6,17 @@
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <ContextMenu x:Shared="false" x:Key="SysTrayMenu">
-            <MenuItem Header="Preferences" Command="{Binding EditPreferencesCommand}" />
+            <MenuItem Header="Preferences" Command="{Binding EditPreferencesCommand}">
+                <MenuItem.Icon>
+                    <Image Width="16" Height="16" Source="/Resources/Preferences.png"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator />
-            <MenuItem Header="Exit" Command="{Binding ExitCifsCommand}" />
+            <MenuItem Header="Exit" Command="{Binding ExitCifsCommand}">
+                <MenuItem.Icon>
+                    <Image Width="16" Height="16" Source="/Resources/Close.png"/>
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
 
         <tb:TaskbarIcon x:Key="NotifyIcon"

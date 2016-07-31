@@ -38,8 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Agents\bin\Debug\Agents.dll</HintPath>
     </Reference>
-    <Reference Include="CifsPreferences">
-      <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.exe</HintPath>
+    <Reference Include="CifsPreferences, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.dll</HintPath>
     </Reference>
     <Reference Include="Constants">
       <HintPath>..\Constants\bin\Debug\Constants.dll</HintPath>
@@ -91,7 +92,7 @@
     </Compile>
     <Compile Include="IconHandling\DelegateCommand.cs" />
     <Compile Include="IconHandling\NotifyIconViewModel.cs" />
-    <Compile Include="Initilization.cs" />
+    <Compile Include="InitilizationData.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -123,7 +124,10 @@
     <Resource Include="Resources\CifsIcon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Service References\" />
+    <Resource Include="Resources\Close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Preferences.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

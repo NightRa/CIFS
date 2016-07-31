@@ -44,6 +44,7 @@
     <Compile Include="Binary\ArrayBinary.cs" />
     <Compile Include="Binary\CharBinary.cs" />
     <Compile Include="Binary\DictionaryBinary.cs" />
+    <Compile Include="Binary\Hashing.cs" />
     <Compile Include="Binary\IntBinary.cs" />
     <Compile Include="Binary\StringBinary.cs" />
     <Compile Include="Box.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="LogHandling\Log.cs" />
     <Compile Include="LogHandling\LogMessage.cs" />
     <Compile Include="LogHandling\MessageEventHandler.cs" />
+    <Compile Include="MonitorExtensions.cs" />
     <Compile Include="OptionUtil\NoneOption.cs" />
     <Compile Include="OptionUtil\NoneOptionExceptioncs.cs" />
     <Compile Include="OptionUtil\Opt.cs" />
