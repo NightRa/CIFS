@@ -2,7 +2,7 @@
 
 namespace Utils.Parsing
 {
-    internal sealed class Result<TResult> : ParsingResult<TResult>
+    public sealed class Result<TResult> : ParsingResult<TResult>
     {
         public override bool IsError => false;
         public override TResult ResultUnsafe { get; }
@@ -17,17 +17,19 @@ namespace Utils.Parsing
             ResultUnsafe = resultUnsafe;
         }
 
+        public override ParsingResult<TOther> Convert<TOther>()
+        {
+            throw new InvalidOperationException("Cannot convert " + typeof(TResult) + " to " + typeof(TOther));
+        }
+
         public override ParsingResult<TOther> Map<TOther>(Func<TResult, TOther> mapFunc)
         {
-            return ParsingResult.Parse(() => mapFunc(ResultUnsafe));
+            return new Result<TOther>(mapFunc(ResultUnsafe));
         }
 
         public override ParsingResult<TOther> FlatMap<TOther>(Func<TResult, ParsingResult<TOther>> mapFunc)
         {
-            var value = ParsingResult.Parse(() => mapFunc(ResultUnsafe));
-            if (value.IsError)
-                return new Error<TOther>(value.ErrorUnsafe);
-            return value.ResultUnsafe;
+            return mapFunc(ResultUnsafe);
         }
 
         public override string ToString()

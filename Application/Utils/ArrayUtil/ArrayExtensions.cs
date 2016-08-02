@@ -22,5 +22,9 @@ namespace Utils.ArrayUtil
                         return false;
             return true;
         }
+        public static string ToHexa(this byte[] @this)
+        {
+            return BitConverter.ToString(@this).Replace("-", string.Empty);
+        }
     }
 }

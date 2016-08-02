@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Utils.GeneralUtils;
 using Utils.Parsing;
 
 namespace Utils.Binary
@@ -17,24 +18,15 @@ namespace Utils.Binary
                 .ToArray();
         }
 
-        public static ParsingResult<T[]> ToArray<T>(this byte[] @this, Box<int> index, ParseFunc<T> parse)
+        public static ParsingResult<T[]> GetArray<T>(this byte[] @this, Box<int> index, ParseFunc<T> parse)
         {
-            return @this.ToInt(index)
-                .FlatMap(amount => Enumerable.Repeat(0, amount)
+            return 
+                @this.GetInt(index)
+                .FlatMap(amount =>
+                    Enumerable.Repeat(0, amount)
                     .Select(_ => parse(@this, index))
                     .Flatten())
                 .Map(Enumerable.ToArray);
-        }
-
-        public static byte[] ToBytes(this byte[] @this)
-        {
-            return @this.Length.ToBytes().Concat(@this).ToArray();
-        }
-
-        public static ParsingResult<byte[]> ToByteArray(this byte[] @this, Box<int> index)
-        {
-            return
-                @this.ToArray(index, (bytes, i) => ParsingResult.Parse(() => bytes[i.Value++]));
         }
     }
 }

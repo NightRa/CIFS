@@ -6,6 +6,7 @@ using FileSystemBrackets;
 using Utils;
 using Utils.ArrayUtil;
 using Utils.Binary;
+using Utils.GeneralUtils;
 using Utils.Parsing;
 
 namespace FileSystem.Pointers
@@ -38,12 +39,12 @@ namespace FileSystem.Pointers
 
         public byte[] ToBytes()
         {
-            return Bits.ToBytes();
+            return Bits.ToBytes(ArrayExtensions.Singleton);
         }
 
         public static ParsingResult<MutablePtr> Parse(byte[] bytes, Box<int> index)
         {
-            return bytes.ToByteArray(index).Map(b => new MutablePtr(b));
+            return bytes.GetArray(index, ByteBinary.GetByte).Map(b => new MutablePtr(b));
         }
     }
 }

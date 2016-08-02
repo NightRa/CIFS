@@ -11,6 +11,7 @@ using Utils;
 using Utils.Binary;
 using Utils.DictionaryUtil;
 using Utils.FileSystemUtil;
+using Utils.GeneralUtils;
 using Utils.IEnumerableUtil;
 using Utils.Parsing;
 using Utils.StringUtil;
@@ -102,9 +103,9 @@ namespace FileSystem.Entries
         public static ParsingResult<Folder> Parse(byte[] bytes, Box<int> index)
         {
             return
-                bytes.ToDictionary(index, Bracket.Parse, FileHash.Parse).FlatMap(files =>
-                    bytes.ToDictionary(index, Bracket.Parse, RemotePath.Parse).FlatMap(follows =>
-                        bytes.ToDictionary(index, Bracket.Parse, Folder.Parse).Map(folders =>
+                bytes.GetDictionary(index, Bracket.Parse, FileHash.Parse).FlatMap(files =>
+                    bytes.GetDictionary(index, Bracket.Parse, RemotePath.Parse).FlatMap(follows =>
+                        bytes.GetDictionary(index, Bracket.Parse, Folder.Parse).Map(folders =>
                             new Folder(files, follows, folders))));
         }
     }

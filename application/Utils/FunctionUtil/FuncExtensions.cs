@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Utils.OptionUtil;
 using static System.Environment;
 
 namespace Utils.FunctionUtil
@@ -21,6 +22,18 @@ namespace Utils.FunctionUtil
             catch (Exception e)
             {
                 log(message + NewLine + e);
+            }
+        }
+        public static Option<T> CatchErrors<T>(this Func<T> @this)
+            where T: struct 
+        {
+            try
+            {
+                return Opt.Some(@this());
+            }
+            catch (Exception)
+            {
+                return Opt.None<T>();
             }
         }
 

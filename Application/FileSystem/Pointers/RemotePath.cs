@@ -5,6 +5,7 @@ using System.Text;
 using FileSystemBrackets;
 using Utils;
 using Utils.Binary;
+using Utils.GeneralUtils;
 using Utils.Parsing;
 
 namespace FileSystem.Pointers

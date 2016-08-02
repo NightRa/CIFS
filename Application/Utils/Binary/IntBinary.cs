@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Utils.GeneralUtils;
 using Utils.Parsing;
 
 namespace Utils.Binary
@@ -17,16 +18,20 @@ namespace Utils.Binary
             return new[] {b1, b2, b3, b4};
         }
 
-        public static ParsingResult<int> ToInt(this byte[] @this, Box<int> index)
+        public static ParsingResult<int> GetInt(this byte[] @this, Box<int> index)
         {
-            return ParsingResult.Parse(() =>
-            {
-                byte b1 = @this[index.Value++];
-                byte b2 = @this[index.Value++];
-                byte b3 = @this[index.Value++];
-                byte b4 = @this[index.Value++];
-                return (b1 << 24) + (b2 << 16) + (b3 << 8) + (b4 << 0);
-            });
+            return
+                @this
+                    .GetBytes(index, 4)
+                    .Map(bytes =>
+                        (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + (bytes[3] << 0));
+        }
+        public static ParsingResult<int> HasToBe(this int actual, int expected)
+        {
+            if (actual == expected)
+                return Parse.Return(actual);
+            return
+                Parse.Error<int>("Error: actual: " + actual + ", expected: " + expected);
         }
     }
 }

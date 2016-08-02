@@ -28,5 +28,37 @@ namespace Constants
 
         public static char DefaultDriverChar => AvailableDriverChars().First();
         public static string StartUpShortcutName => "CIFS.lnk";
+        public static int TcpPort => 8008;
+
+        public static DirectoryInfo ReadOnlyDirectory(Action<string> log)
+        {
+            var path = CifsDirectoryPath.CombinePathWith("ReadOnlyDir");
+            if (!path.DoesFolderExists(log))
+                path.CreateDirectory(FileAttributes.ReadOnly, log);
+            return path.GetDirectoryInfo();
+        }
+        public static FileInfo ReadOnlyFile(Action<string> log)
+        {
+            var path = CifsDirectoryPath.CombinePathWith("ReadOnlyFile.txt");
+            if (!path.DoesFileExists(log))
+                path.CreateFile(new byte[0], log);
+            path.GetFileInfo().Attributes |= FileAttributes.ReadOnly;
+            return path.GetFileInfo();
+        }
+        public static DirectoryInfo RegularDirectory(Action<string> log)
+        {
+            var path = CifsDirectoryPath.CombinePathWith("RegularDir");
+            if (!path.DoesFolderExists(log))
+                path.CreateDirectory(FileAttributes.Directory, log);
+            return path.GetDirectoryInfo();
+        }
+        public static FileInfo RegularFile(Action<string> log)
+        {
+            var path = CifsDirectoryPath.CombinePathWith("RegularFile.txt");
+            if (!path.DoesFileExists(log))
+                path.CreateFile(new byte[0], log);
+            path.GetFileInfo().Attributes |= FileAttributes.Normal;
+            return path.GetFileInfo();
+        }
     }
 }

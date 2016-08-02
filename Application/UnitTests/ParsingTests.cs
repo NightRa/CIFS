@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utils;
 using Utils.Binary;
 using Utils.DictionaryUtil;
+using Utils.GeneralUtils;
 using Utils.Parsing;
 
 namespace UnitTests
@@ -16,9 +17,9 @@ namespace UnitTests
     public class ParsingTests
     {
         [TestMethod]
-        public void TestPure()
+        public void TestReturn()
         {
-            var pure = ParsingResult.Pure(77);
+            var pure = Parse.Return(77);
             Assert.IsTrue(pure.IsResult);
             Assert.IsFalse(pure.IsError);
             Assert.AreEqual(77 ,pure.ResultUnsafe);
@@ -26,7 +27,7 @@ namespace UnitTests
         [TestMethod]
         public void TestError()
         {
-            var pure = ParsingResult.Error<int>("hello");
+            var pure = Parse.Error<int>("hello");
             Assert.IsFalse(pure.IsResult);
             Assert.IsTrue(pure.IsError);
             Assert.AreEqual("hello", pure.ErrorUnsafe);
@@ -42,7 +43,7 @@ namespace UnitTests
             Assert.AreEqual(0x56, bytes[2]);
             Assert.AreEqual(0x78, bytes[3]);
             var index = new Box<int>(0);
-            var parsedNum = bytes.ToInt(index);
+            var parsedNum = bytes.GetInt(index);
             Assert.AreEqual(4, index.Value);
             Assert.AreEqual(num, parsedNum.ResultUnsafe);
         }
@@ -51,7 +52,7 @@ namespace UnitTests
         {
             char ch = 'D';
             var bytes = ch.ToBytes();
-            var parse = bytes.ToChar(new Box<int>(0));
+            var parse = bytes.GetChar(new Box<int>(0));
             Assert.IsTrue(parse.IsResult);
             Assert.AreEqual(ch, parse.ResultUnsafe);
         }
@@ -60,7 +61,7 @@ namespace UnitTests
         {
             char ch = '8';
             var bytes = ch.ToBytes();
-            var parse = bytes.ToChar(new Box<int>(0));
+            var parse = bytes.GetChar(new Box<int>(0));
             Assert.IsTrue(parse.IsResult);
             Assert.AreEqual(ch, parse.ResultUnsafe);
         }
@@ -69,7 +70,7 @@ namespace UnitTests
         {
             char ch = 'א';
             var bytes = ch.ToBytes();
-            var parse = bytes.ToChar(new Box<int>(0));
+            var parse = bytes.GetChar(new Box<int>(0));
             Assert.IsTrue(parse.IsResult);
             Assert.AreEqual(ch, parse.ResultUnsafe);
         }
@@ -78,7 +79,7 @@ namespace UnitTests
         {
             var str = "sadfsdsdfsdgdsg675iet7i6r7iw45";
             var bytes = str.ToBytes();
-            var parse = bytes.ParseToString(new Box<int>(0));
+            var parse = bytes.GetString(new Box<int>(0));
             Assert.IsTrue(parse.IsResult);
             Assert.AreEqual(str, parse.ResultUnsafe);
         }
@@ -89,7 +90,7 @@ namespace UnitTests
             d.Add(4, "etrרקאעגעגכasa");
             d.Add(999, "bosfvdxfbsbגכדכגדכo");
             var bytes = d.ToBytes(IntBinary.ToBytes, StringBinary.ToBytes);
-            var maybeDict = bytes.ToDictionary(new Box<int>(0), IntBinary.ToInt, StringBinary.ParseToString);
+            var maybeDict = bytes.GetDictionary(new Box<int>(0), IntBinary.GetInt, StringBinary.GetString);
             Assert.IsTrue(d.EqualDictionary(maybeDict.ResultUnsafe));
         }
         [TestMethod]

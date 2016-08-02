@@ -5,6 +5,7 @@ using System.Text;
 using FileSystem.Entries;
 using Utils;
 using Utils.Binary;
+using Utils.GeneralUtils;
 using Utils.OptionUtil;
 using Utils.Parsing;
 using static Constants.Global;
@@ -40,10 +41,10 @@ namespace CifsPreferences
         {
             return
                 bytes
-                .ToBool(index)
+                .GetBool(index)
                 .FlatMap(openOnStartup =>
                     bytes
-                    .ToChar(index)
+                    .GetChar(index)
                     .Map(driverChar =>
                         new Preferences(openOnStartup, driverChar)));
         }

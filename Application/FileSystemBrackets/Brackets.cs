@@ -6,6 +6,7 @@ using System.Text;
 using Utils;
 using Utils.ArrayUtil;
 using Utils.Binary;
+using Utils.GeneralUtils;
 using Utils.IEnumerableUtil;
 using Utils.Parsing;
 
@@ -45,7 +46,10 @@ namespace FileSystemBrackets
 
         public static ParsingResult<Brackets> Parse(byte[] bytes, Box<int> index)
         {
-            return bytes.ToArray(index, Bracket.Parse).Map(s => new Brackets(s));
+            return
+                bytes
+                .GetArray(index, Bracket.Parse)
+                .Map(s => new Brackets(s));
         }
 
         private bool Equals(Brackets other)

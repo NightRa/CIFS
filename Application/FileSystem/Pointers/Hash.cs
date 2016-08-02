@@ -5,6 +5,7 @@ using System.Text;
 using Utils;
 using Utils.ArrayUtil;
 using Utils.Binary;
+using Utils.GeneralUtils;
 using Utils.Parsing;
 
 namespace FileSystem.Pointers
@@ -51,12 +52,15 @@ namespace FileSystem.Pointers
 
         public byte[] ToBytes()
         {
-            return this.Bits.ToBytes();
+            return this.Bits.ToBytes(ArrayExtensions.Singleton);
         }
 
         public static ParsingResult<Hash> Parse(byte[] bytes, Box<int> index)
         {
-            return bytes.ToByteArray(index).Map(bits => new Hash(bits));
+            return 
+                bytes
+                .GetArray(index, ByteBinary.GetByte)
+                .Map(bits => new Hash(bits));
         }
     }
 }

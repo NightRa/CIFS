@@ -38,6 +38,9 @@
     <Reference Include="Agents">
       <HintPath>..\Agents\bin\Debug\Agents.dll</HintPath>
     </Reference>
+    <Reference Include="Communication">
+      <HintPath>..\Communication\bin\Debug\Communication.dll</HintPath>
+    </Reference>
     <Reference Include="Constants">
       <HintPath>..\Constants\bin\Debug\Constants.dll</HintPath>
     </Reference>
@@ -64,6 +67,31 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CifsDriverInstance.cs" />
+    <Compile Include="CifsIpfsDriverInstance.cs" />
+    <Compile Include="Messaging\Clone\CloneRequest.cs" />
+    <Compile Include="Messaging\Clone\CloneResponse.cs" />
+    <Compile Include="Messaging\CreateFile\CreateFileRequest.cs" />
+    <Compile Include="Messaging\CreateFile\CreateFileResponse.cs" />
+    <Compile Include="Messaging\CreateFolder\CreateFolderRequest.cs" />
+    <Compile Include="Messaging\CreateFolder\CreateFolderResponse.cs" />
+    <Compile Include="Messaging\Delete\DeleteRequest.cs" />
+    <Compile Include="Messaging\Delete\DeleteResponse.cs" />
+    <Compile Include="Messaging\Flush\FlushRequest.cs" />
+    <Compile Include="Messaging\Flush\FlushResponse.cs" />
+    <Compile Include="Messaging\Follow\FollowRequest.cs" />
+    <Compile Include="Messaging\Follow\FollowResponse.cs" />
+    <Compile Include="Messaging\GetInnerEntries\GetInnerEntriesRequest.cs" />
+    <Compile Include="Messaging\GetInnerEntries\GetInnerEntriesResponse.cs" />
+    <Compile Include="Messaging\Move\MoveRequest.cs" />
+    <Compile Include="Messaging\Move\MoveResponse.cs" />
+    <Compile Include="Messaging\ReadFile\ReadFileRequest.cs" />
+    <Compile Include="Messaging\ReadFile\ReadFileResponse.cs" />
+    <Compile Include="Messaging\RootHash\RootHashRequest.cs" />
+    <Compile Include="Messaging\RootHash\RootHashResponse.cs" />
+    <Compile Include="Messaging\Stat\StatRequest.cs" />
+    <Compile Include="Messaging\Stat\StatResponse.cs" />
+    <Compile Include="Messaging\WriteFile\WriteFileRequest.cs" />
+    <Compile Include="Messaging\WriteFile\WriteFileResponse.cs" />
     <Compile Include="ProccessMessages.cs" />
     <Compile Include="RunDokan.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -71,6 +99,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

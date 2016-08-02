@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Utils;
 using Utils.Binary;
+using Utils.GeneralUtils;
 using Utils.Parsing;
 
 namespace FileSystemBrackets
@@ -47,7 +48,10 @@ namespace FileSystemBrackets
 
         public static ParsingResult<Bracket> Parse(byte[] bytes, Box<int> index)
         {
-            return bytes.ParseToString(index).Map(s => new Bracket(s));
+            return
+                bytes
+                .GetString(index)
+                .Map(s => new Bracket(s));
         } 
     }
 }

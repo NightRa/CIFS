@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Utils.GeneralUtils;
 using Utils.IEnumerableUtil;
 using Utils.Parsing;
 
@@ -20,12 +21,12 @@ namespace Utils.Binary
                 .ToArray();
         }
 
-        public static ParsingResult<Dictionary<TKey, TValue>> ToDictionary<TKey, TValue>(this byte[] @this,
+        public static ParsingResult<Dictionary<TKey, TValue>> GetDictionary<TKey, TValue>(this byte[] @this,
             Box<int> index, ParseFunc<TKey> parseKey, ParseFunc<TValue> parseValue)
         {
             return
                 @this
-                    .ToInt(index)
+                    .GetInt(index)
                     .FlatMap(amount =>
                         Enumerable
                             .Repeat(0, amount)

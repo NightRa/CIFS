@@ -11,6 +11,7 @@ using FileSystem.Pointers;
 using FileSystemBrackets;
 using Utils;
 using Utils.ArrayUtil;
+using Utils.ConcurrencyUtils;
 using Utils.FileSystemUtil;
 using Utils.OptionUtil;
 using FileAccess = DokanNet.FileAccess;
@@ -222,14 +223,7 @@ namespace Dokan
                 return DokanResult.FileNotFound;
             var isEmpty = MainFolder.GetFolder(fileName.AsBrackets()).ValueUnsafe.IsEmpty;
             if (!isEmpty)
-            {
-                Log("$$$");
                 return DokanResult.DirectoryNotEmpty;
-            }
-            else
-            {
-                Log("@@@@");
-            }
             access.Iter(MainFolder.DeleteFolder);
             return DokanResult.Success;
         }

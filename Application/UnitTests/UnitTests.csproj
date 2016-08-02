@@ -38,6 +38,9 @@
     <Reference Include="CifsPreferences">
       <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.dll</HintPath>
     </Reference>
+    <Reference Include="Dokan">
+      <HintPath>..\Dokan\bin\Debug\Dokan.exe</HintPath>
+    </Reference>
     <Reference Include="FileSystem">
       <HintPath>..\FileSystem\bin\Debug\FileSystem.dll</HintPath>
     </Reference>
@@ -65,6 +68,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="GeneralParsing.cs" />
+    <Compile Include="MessagingEncoding.cs" />
+    <Compile Include="MessagingParsing.cs" />
     <Compile Include="ParsingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
