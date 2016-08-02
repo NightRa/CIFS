@@ -12,8 +12,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Communication;
+using Communication.DokanMessaging.RootHash;
 using Constants;
-using Dokan.Messaging.RootHash;
 using Utils.ArrayUtil;
 using Utils.FileSystemUtil;
 

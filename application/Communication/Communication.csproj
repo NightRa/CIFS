@@ -38,6 +38,16 @@
     <Reference Include="Agents">
       <HintPath>..\Agents\bin\Debug\Agents.dll</HintPath>
     </Reference>
+    <Reference Include="Constants">
+      <HintPath>..\Constants\bin\Debug\Constants.dll</HintPath>
+    </Reference>
+    <Reference Include="DokanNet, Version=1.0.8.0, Culture=neutral, PublicKeyToken=3709aaa01df28a9e, processorArchitecture=MSIL">
+      <HintPath>..\packages\DokanNet.1.0.8.0\lib\net40\DokanNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FileSystem">
+      <HintPath>..\FileSystem\bin\Debug\FileSystem.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
@@ -54,10 +64,36 @@
     <Compile Include="Messages\RecieveMessageResult.cs" />
     <Compile Include="Messages\SendMessageResult.cs" />
     <Compile Include="CommunicationAgent.cs" />
+    <Compile Include="DokanMessaging\Clone\CloneRequest.cs" />
+    <Compile Include="DokanMessaging\Clone\CloneResponse.cs" />
+    <Compile Include="DokanMessaging\CreateFile\CreateFileRequest.cs" />
+    <Compile Include="DokanMessaging\CreateFile\CreateFileResponse.cs" />
+    <Compile Include="DokanMessaging\CreateFolder\CreateFolderRequest.cs" />
+    <Compile Include="DokanMessaging\CreateFolder\CreateFolderResponse.cs" />
+    <Compile Include="DokanMessaging\Delete\DeleteRequest.cs" />
+    <Compile Include="DokanMessaging\Delete\DeleteResponse.cs" />
+    <Compile Include="DokanMessaging\Flush\FlushRequest.cs" />
+    <Compile Include="DokanMessaging\Flush\FlushResponse.cs" />
+    <Compile Include="DokanMessaging\Follow\FollowRequest.cs" />
+    <Compile Include="DokanMessaging\Follow\FollowResponse.cs" />
+    <Compile Include="DokanMessaging\GetInnerEntries\GetInnerEntriesRequest.cs" />
+    <Compile Include="DokanMessaging\GetInnerEntries\GetInnerEntriesResponse.cs" />
+    <Compile Include="DokanMessaging\Move\MoveRequest.cs" />
+    <Compile Include="DokanMessaging\Move\MoveResponse.cs" />
+    <Compile Include="DokanMessaging\ReadFile\ReadFileRequest.cs" />
+    <Compile Include="DokanMessaging\ReadFile\ReadFileResponse.cs" />
+    <Compile Include="DokanMessaging\RootHash\RootHashRequest.cs" />
+    <Compile Include="DokanMessaging\RootHash\RootHashResponse.cs" />
+    <Compile Include="DokanMessaging\Stat\StatRequest.cs" />
+    <Compile Include="DokanMessaging\Stat\StatResponse.cs" />
+    <Compile Include="DokanMessaging\WriteFile\WriteFileRequest.cs" />
+    <Compile Include="DokanMessaging\WriteFile\WriteFileResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Comunicator.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

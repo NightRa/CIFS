@@ -38,6 +38,10 @@
     <Reference Include="CifsPreferences">
       <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.dll</HintPath>
     </Reference>
+    <Reference Include="Communication, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Communication\bin\Debug\Communication.dll</HintPath>
+    </Reference>
     <Reference Include="Dokan">
       <HintPath>..\Dokan\bin\Debug\Dokan.exe</HintPath>
     </Reference>
