@@ -1,29 +1,30 @@
-﻿using Communication.DokanMessaging.CreateFile;
-using Utils.Binary;
+﻿using Utils.Binary;
 using Utils.GeneralUtils;
 using Utils.Parsing;
 
-namespace Communication.DokanMessaging.Follow
+namespace Communication.DokanMessaging.CloneOrFollow
 {
-    public sealed class FollowResponse
+    public sealed class CloneOrFollowResponse
     {
-        public static byte TypeNum => FollowRequest.TypeNum;
+        public static byte TypeNum => CloneOrFollowRequest.TypeNum;
         public bool IsReadOnlyFolder { get; }
         public bool IsNameCollision { get; }
         public bool PathToParentDoesntExist { get; }
+        public bool MalformedPath { get; }
         public bool RootNotFound { get; }
         public bool RemotePathBroken { get; }
 
-        public FollowResponse(bool isReadOnlyFolder, bool isNameCollision, bool pathToParentDoesntExist, bool rootNotFound, bool remotePathBroken)
+        public CloneOrFollowResponse(bool isReadOnlyFolder, bool isNameCollision, bool pathToParentDoesntExist, bool malformedPath, bool rootNotFound, bool remotePathBroken)
         {
             IsReadOnlyFolder = isReadOnlyFolder;
             IsNameCollision = isNameCollision;
             PathToParentDoesntExist = pathToParentDoesntExist;
             RootNotFound = rootNotFound;
             RemotePathBroken = remotePathBroken;
+            MalformedPath = malformedPath;
         }
 
-        public static ParsingResult<FollowResponse> Parse(byte[] bytes)
+        public static ParsingResult<CloneOrFollowResponse> Parse(byte[] bytes)
         {
             var index = new Box<int>(0);
             return
@@ -37,9 +38,10 @@ namespace Communication.DokanMessaging.Follow
                                     bool isReadOnly = x == 1;
                                     bool isNameCollision = x == 2;
                                     bool doesPathToParentDoesntExist = x == 3;
-                                    bool rootNotFound = x == 4;
-                                    bool brokenRemotePath = x == 5;
-                                    return new FollowResponse(isReadOnly, isNameCollision, doesPathToParentDoesntExist, rootNotFound, brokenRemotePath);
+                                    bool malformedPath = x == 4;
+                                    bool rootNotFound = x == 5;
+                                    bool brokenRemotePath = x == 6;
+                                    return new CloneOrFollowResponse(isReadOnly, isNameCollision, doesPathToParentDoesntExist, malformedPath, rootNotFound, brokenRemotePath);
                                 })));
         }
     }

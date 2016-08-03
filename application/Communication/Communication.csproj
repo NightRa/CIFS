@@ -64,8 +64,8 @@
     <Compile Include="Messages\RecieveMessageResult.cs" />
     <Compile Include="Messages\SendMessageResult.cs" />
     <Compile Include="CommunicationAgent.cs" />
-    <Compile Include="DokanMessaging\Clone\CloneRequest.cs" />
-    <Compile Include="DokanMessaging\Clone\CloneResponse.cs" />
+    <Compile Include="DokanMessaging\CloneOrFollow\CloneOrFollowRequest.cs" />
+    <Compile Include="DokanMessaging\CloneOrFollow\CloneOrFollowResponse.cs" />
     <Compile Include="DokanMessaging\CreateFile\CreateFileRequest.cs" />
     <Compile Include="DokanMessaging\CreateFile\CreateFileResponse.cs" />
     <Compile Include="DokanMessaging\CreateFolder\CreateFolderRequest.cs" />
@@ -74,8 +74,6 @@
     <Compile Include="DokanMessaging\Delete\DeleteResponse.cs" />
     <Compile Include="DokanMessaging\Flush\FlushRequest.cs" />
     <Compile Include="DokanMessaging\Flush\FlushResponse.cs" />
-    <Compile Include="DokanMessaging\Follow\FollowRequest.cs" />
-    <Compile Include="DokanMessaging\Follow\FollowResponse.cs" />
     <Compile Include="DokanMessaging\GetInnerEntries\GetInnerEntriesRequest.cs" />
     <Compile Include="DokanMessaging\GetInnerEntries\GetInnerEntriesResponse.cs" />
     <Compile Include="DokanMessaging\Move\MoveRequest.cs" />

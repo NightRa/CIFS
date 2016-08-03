@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Linq;
 using Communication;
-using Communication.DokanMessaging.Clone;
+using Communication.DokanMessaging.CloneOrFollow;
 using Communication.DokanMessaging.CreateFile;
 using Communication.DokanMessaging.CreateFolder;
 using Communication.DokanMessaging.Delete;
 using Communication.DokanMessaging.Flush;
-using Communication.DokanMessaging.Follow;
 using Communication.DokanMessaging.GetInnerEntries;
 using Communication.DokanMessaging.Move;
 using Communication.DokanMessaging.ReadFile;
@@ -14,11 +12,8 @@ using Communication.DokanMessaging.RootHash;
 using Communication.DokanMessaging.Stat;
 using Communication.DokanMessaging.WriteFile;
 using Communication.Messages;
-using Constants;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utils.ArrayUtil;
-using Utils.Parsing;
-using Utils.StringUtil;
 
 namespace UnitTests
 {
@@ -174,19 +169,34 @@ namespace UnitTests
         {
             var path1 = "f7bbda7ed735f7b0652743bc6a765dcccf0114deaaa1ed22da1378943d9f25cc";
             var path2 = "f7bbda7ed735f7b0652732423443bc6a765dcccf0114deaaa1ed22da1378943d9f25cc";
-            var request = new CloneRequest(path1, path2);
-            var maybeResponse = communicator.GetResponse(request, CloneResponse.Parse);
+            var request = new CloneOrFollowRequest(false, path1, path2);
+            var maybeResponse = communicator.GetResponse(request, CloneOrFollowResponse.Parse);
             if (maybeResponse.IsError)
                 Assert.Fail("Parsing error: " + maybeResponse.ErrorUnsafe);
+            Assert.IsTrue(maybeResponse.IsResult);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.IsNameCollision);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.IsReadOnlyFolder);
+            Assert.IsTrue(maybeResponse.ResultUnsafe.MalformedPath);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.PathToParentDoesntExist);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.RemotePathBroken);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.RootNotFound);
         }
         [TestMethod]
         public void TestFollow()
         {
-            var path = "f7bbda7ed735f7b0652743bc6a765dcccf0114deaaa1ed22da1378943d9f25cc";
-            var request = new FollowRequest(path);
-            var maybeResponse = communicator.GetResponse(request, FollowResponse.Parse);
+            var path1 = "f7bbda7ed735f7b0652743bc6a765dcccf0114deaaa1ed22da1378943d9f25cc";
+            var path2 = "f7bbda7ed735f7b0652732423443bc6a765dcccf0114deaaa1ed22da1378943d9f25cc";
+            var request = new CloneOrFollowRequest(true, path1, path2);
+            var maybeResponse = communicator.GetResponse(request, CloneOrFollowResponse.Parse);
             if (maybeResponse.IsError)
                 Assert.Fail("Parsing error: " + maybeResponse.ErrorUnsafe);
+            Assert.IsTrue(maybeResponse.IsResult);
+            Assert.IsTrue(maybeResponse.ResultUnsafe.IsNameCollision);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.IsReadOnlyFolder);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.MalformedPath);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.PathToParentDoesntExist);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.RemotePathBroken);
+            Assert.IsFalse(maybeResponse.ResultUnsafe.RootNotFound);
         }
 
         [TestMethod]

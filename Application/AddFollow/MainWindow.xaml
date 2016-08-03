@@ -5,18 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Title="" Height="130" Width="310" FontSize="12">
+        Title="New follow" Height="190" Width="450" FontSize="12">
     <StackPanel>
-        <TextBlock Margin="12.5,6,6,6">
-                        Enter link to follow:
-        </TextBlock>
-        <TextBox Margin="25,4,25,4" Name="FollowTextBox" VerticalContentAlignment="Center" Height="20"></TextBox>
+        <TextBlock Margin="12.5,6,6,0" Text="Choose follow or clone:" />
+        <RadioButton Content="Follow" Margin="25,5,0,0" Name="FollowRadioButton"  IsChecked="True"/>
+        <RadioButton Content="Clone" Margin="25,4,0,0" Name="CloneRadioButton"/>
+        <TextBlock Margin="12.5,6,6,6" Text="Enter link to follow:" />
+        
+        <TextBox Margin="27,4,25,4" Name="FollowTextBox" VerticalContentAlignment="Center" Height="20"></TextBox>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Margin="6,6,0,6" Padding="12,5,12,5" Name="CancelButton" Click="CancelButton_OnClick">
+            <Button Margin="6,6,0,6" Padding="12,5,12,5" Name="CancelButton" Click="CancelButton_OnClick" Width="60">
                 Cancel
             </Button>
-            <Button Margin="6,6,25,6" Padding="12,5,12,5" Name="FollowButton" Click="FollowButton_OnClick">
-                Follow
+            <Button Margin="6,6,25,6" Padding="12,5,12,5" Name="FollowButton" Click="FollowButton_OnClick" Width="60">
+                OK
             </Button>
         </StackPanel>
     </StackPanel>

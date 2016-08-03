@@ -40,6 +40,12 @@
     <Reference Include="Agents">
       <HintPath>..\Messaging\bin\Debug\Agents.dll</HintPath>
     </Reference>
+    <Reference Include="Communication">
+      <HintPath>..\Communication\bin\Debug\Communication.dll</HintPath>
+    </Reference>
+    <Reference Include="Constants">
+      <HintPath>..\Constants\bin\Debug\Constants.dll</HintPath>
+    </Reference>
     <Reference Include="Gui">
       <HintPath>..\Gui\bin\Debug\Gui.dll</HintPath>
     </Reference>
