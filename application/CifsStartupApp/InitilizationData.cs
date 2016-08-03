@@ -49,7 +49,9 @@ namespace CifsStartupApp
                 return;
             App.UnmountDokan(TimeSpan.FromSeconds(15));
             this.RunAgentLoopAsync(GetIndex(), preferences);
-            CifsPreferencesDataPath.CreateFile(preferences.ToBytes(), Log);
+
+            lock (CifsPreferencesDataPath)
+                CifsPreferencesDataPath.CreateFile(preferences.ToBytes(), Log);
         }
 
         public Index GetIndex()
@@ -70,26 +72,30 @@ namespace CifsStartupApp
 
         public Preferences GetPreferences()
         {
-            if (!CifsPreferencesDataPath.DoesFileExists(Log))
-                CifsPreferencesDataPath.CreateFile(Preferences.Default().ToBytes(), Log);
-            var maybePreferences = Preferences.Parse(CifsPreferencesDataPath.ReadAllBytes(), new Box<int>(0));
-            Preferences preferences = null;
-            if (maybePreferences.IsResult)
-                preferences = maybePreferences.ResultUnsafe;
-            else
+            lock (CifsPreferencesDataPath)
             {
-                preferences = Preferences.Default();
-                Log("Preferences parsing error: " + maybePreferences.ErrorUnsafe);
-                CifsIndexDataPath.CreateFile(preferences.ToBytes(), Log);
+                if (!CifsPreferencesDataPath.DoesFileExists(Log))
+                    CifsPreferencesDataPath.CreateFile(Preferences.Default().ToBytes(), Log);
+                var maybePreferences = Preferences.Parse(CifsPreferencesDataPath.ReadAllBytes(), new Box<int>(0));
+                Preferences preferences = null;
+                if (maybePreferences.IsResult)
+                    preferences = maybePreferences.ResultUnsafe;
+                else
+                {
+                    preferences = Preferences.Default();
+                    Log("Preferences parsing error: " + maybePreferences.ErrorUnsafe);
+                    CifsIndexDataPath.CreateFile(preferences.ToBytes(), Log);
+                }
+                return preferences;
             }
-            return preferences;
         }
 
         public void ApplyPreferencesInitially(Preferences preferences)
         {
             Log("Initilize: applying preferences " + preferences.ToString().Replace(NewLine, " "));
             ChangeOnStartupTo(preferences.OpenOnStartup);
-            CifsPreferencesDataPath.CreateFile(preferences.ToBytes(), Log);
+            lock (CifsPreferencesDataPath)
+                CifsPreferencesDataPath.CreateFile(preferences.ToBytes(), Log);
         }
 
         private void ChangeOnStartupTo(bool openOnStartup)

@@ -14,8 +14,9 @@ namespace Constants
         public static FileInfo FindFilePath()
         {
             Action<string> log = s => { };
-            if (CifsPreferencesDataPath.DoesFileExists(log))
-                return CifsPreferencesDataPath.GetFileInfo();
+            lock (CifsPreferencesDataPath)
+                if (CifsPreferencesDataPath.DoesFileExists(log))
+                    return CifsPreferencesDataPath.GetFileInfo();
             if (CifsIndexDataPath.DoesFileExists(log))
                 return CifsIndexDataPath.GetFileInfo();
             var maybeFile1 = Desktop.GetPath().TryFindFileInFolder(log);

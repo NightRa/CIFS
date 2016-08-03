@@ -15,10 +15,10 @@ namespace Constants
 
         public static readonly object DokanRunningObject = new object();
 
-        public static string CifsDirectoryPath => MyDocuments.GetPath().CombinePathWith("CIFS");
-        public static string CifsIconPath => CifsDirectoryPath.CombinePathWith("CifsIcon.ico");
-        public static string CifsPreferencesDataPath => CifsDirectoryPath.CombinePathWith("Preferences.dat");
-        public static string CifsIndexDataPath => CifsDirectoryPath.CombinePathWith("Index.dat");
+        public static readonly string CifsDirectoryPath = MyDocuments.GetPath().CombinePathWith("CIFS");
+        public static readonly string CifsIconPath = CifsDirectoryPath.CombinePathWith("CifsIcon.ico");
+        public static readonly string CifsPreferencesDataPath = CifsDirectoryPath.CombinePathWith("Preferences.dat");
+        public static readonly string CifsIndexDataPath = CifsDirectoryPath.CombinePathWith("Index.dat");
         public static char[] AvailableDriverChars()
         {
             const string chars = "BCDEFGHIJKLMNOPQRSTUVWXYZ"; /* 'A' is not allowed! */
