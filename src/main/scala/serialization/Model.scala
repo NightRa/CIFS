@@ -8,6 +8,12 @@ import scalaz.{IMap, Order}
 import scalaz.std.string._
 
 object Model {
+  // Hash = 256 bits
+  // MutablePtr = 256 bits
+  // RemotePath = MutablePtr + int32 size of list + n strings (int32 size in bytes + the bytes)
+  // List of A: int32 size, then A's.
+  // Map[A,B] = List of (A,B)
+  // Folder = Map[String, Hash], Map[String, RemotePath], Map[String, Folder]
   val hashSha256Codec: Codec[Hash] = "Hash-SHA256" | bits(256).as[Hash]
   val mutablePtrCodec: Codec[MutablePtr] = "Mutable Pointer" | hashSha256Codec.as[MutablePtr]
   val remotePathCodec: Codec[RemotePath] = "Remote Path" | (mutablePtrCodec :: listOfN(int32, utf8_32)).as[RemotePath]
