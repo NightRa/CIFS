@@ -73,11 +73,12 @@ namespace CifsStartupApp
             if (!CifsPreferencesDataPath.DoesFileExists(Log))
                 CifsPreferencesDataPath.CreateFile(Preferences.Default().ToBytes(), Log);
             var maybePreferences = Preferences.Parse(CifsPreferencesDataPath.ReadAllBytes(), new Box<int>(0));
-            var preferences = Preferences.Default();
+            Preferences preferences = null;
             if (maybePreferences.IsResult)
                 preferences = maybePreferences.ResultUnsafe;
             else
             {
+                preferences = Preferences.Default();
                 Log("Preferences parsing error: " + maybePreferences.ErrorUnsafe);
                 CifsIndexDataPath.CreateFile(preferences.ToBytes(), Log);
             }

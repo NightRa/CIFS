@@ -298,9 +298,9 @@ namespace Dokan
         public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, DokanFileInfo info)
         {
             Log("GetDiskFreeSpace");
-            totalNumberOfBytes = 1024L * 1024L;
-            freeBytesAvailable = totalNumberOfBytes;
-            totalNumberOfFreeBytes = totalNumberOfBytes;
+            totalNumberOfBytes = 1024L * 1024L * 50;
+            freeBytesAvailable = totalNumberOfBytes / 2;
+            totalNumberOfFreeBytes = freeBytesAvailable;
             return DokanResult.Success;
         }
 
