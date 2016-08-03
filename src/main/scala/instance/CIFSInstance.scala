@@ -1,3 +1,4 @@
+/*
 package instance
 
 import java.io.File
@@ -71,3 +72,4 @@ object CIFS {
   }
 
 }
+*/

@@ -4,15 +4,16 @@ import scodec.bits._
 import scodec.codecs._
 import scodec.{Attempt, Codec, DecodeResult, Err, SizeBound}
 import serialization.Model.mutablePtrCodec
+import serialization.Response.RootKeyOK
 
-object CommunicationProtocol extends App {
+object CommunicationProtocol {
   // Some primitives
   val path = utf8_32
   val byte: Codec[Short] = ushort8
   val uint64: Codec[Long] = constant(BitVector.zero) ~> ulong(63)
-  
+
   // The codecs
-  
+
   val ftype: Codec[Response.FType] = "File/Folder type" | discriminated[Response.FType].by(byte)
     .typecase(0, provide(Response.File))
     .typecase(1, provide(Response.Folder))
@@ -23,7 +24,7 @@ object CommunicationProtocol extends App {
 
   // 0 - root key
   val rootKeyRequest = "Root Key Request" | provide(Requests.RootKey)
-  val rootKeyResponse: Codec[Response.RootKeyOK] = "Root Key Response" | mutablePtrCodec.xmap(ptr => Response.RootKeyOK(ptr), _.hash)
+  val rootKeyResponse: Codec[Response.RootKeyOK] = "Root Key Response" | utf8_32.as[RootKeyOK]
 
   // 1 - flush
   val flushRequest = "Flush Request" | provide(Requests.Flush)
@@ -69,6 +70,7 @@ object CommunicationProtocol extends App {
     .typecase(0, provide(Response.MkdirOK))
     .typecase(1, provide(Response.MkdirFolderReadOnly))
     .typecase(2, provide(Response.MkdirNameCollision))
+    .typecase(3, provide(Response.MkdirParentDoesntExist))
 
   // 8 - rm
   val rmRequest: Codec[Requests.Rm] = "Rm Request" | path.as[Requests.Rm]
@@ -84,6 +86,20 @@ object CommunicationProtocol extends App {
     .typecase(1, provide(Response.MvReadOnly))
     .typecase(2, provide(Response.MvSrcDoesntExist))
 
+  // 10 - mv
+  val cloneOrFollow: Codec[Requests.CloneOrFollow] = "Clone or Follow" | discriminated[Requests.CloneOrFollow].by(byte)
+    .typecase(0, provide(Requests.Clone))
+    .typecase(1, provide(Requests.Follow))
+  val cloneFollowRequest: Codec[Requests.CloneFollow] = "Clone-Follow Request" | (cloneOrFollow :: path :: path).as[Requests.CloneFollow]
+  val cloneFollowResponse: Codec[Response.CloneFollow] = "Clone-Follow Response" | discriminated[Response.CloneFollow].by(byte)
+    .typecase(0, provide(Response.CloneFollowOK))
+    .typecase(1, provide(Response.CloneFollowFolderIsReadOnly))
+    .typecase(2, provide(Response.CloneFollowNameCollision))
+    .typecase(3, provide(Response.CloneFollowParentDoesntExist))
+    .typecase(4, provide(Response.CloneFollowMalformedPath))
+    .typecase(5, provide(Response.CloneFollowRootNotFound))
+    .typecase(6, provide(Response.CloneFollowRemotePathBroken))
+
   // Request codec
   val request = discriminated[Requests.Request].by(byte)
     .typecase(0, rootKeyRequest)
@@ -96,6 +112,7 @@ object CommunicationProtocol extends App {
     .typecase(7, mkdirRequest)
     .typecase(8, rmRequest)
     .typecase(9, mvRequest)
+    .typecase(10, cloneFollowRequest)
 
   // Response codec
   val response = discriminated[Response.Response].by(byte)
@@ -109,6 +126,7 @@ object CommunicationProtocol extends App {
     .typecase(7, mkdirResponse)
     .typecase(8, rmResponse)
     .typecase(9, mvResponse)
+    .typecase(10, cloneFollowResponse)
 
   // Some primitives
 
@@ -135,6 +153,5 @@ object CommunicationProtocol extends App {
       else Attempt.failure(Err(s"Insufficient number of elements: decoded ${xs.size} but should have decoded $cnt"))
     }, xs => (xs.size, xs)).withToString(s"data32")
   }
-
 
 }

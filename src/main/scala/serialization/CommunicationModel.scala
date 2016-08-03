@@ -4,12 +4,16 @@ import java.nio.charset.Charset
 
 import model.MutablePtr
 import scodec.Codec
-import scodec.bits.ByteVector
+import scodec.bits.{BitVector, ByteVector}
 import scodec.codecs._
 
 import scala.language.higherKinds
 
 object Requests {
+  sealed trait CloneOrFollow
+  case object Clone extends CloneOrFollow
+  case object Follow extends CloneOrFollow
+
   type Path = String
   sealed trait Request
   case object RootKey extends Request
@@ -22,6 +26,7 @@ object Requests {
   case class Mkdir(path: Path) extends Request
   case class Rm(path: Path) extends Request
   case class Mv(src: Path, dest: Path) extends Request
+  case class CloneFollow(cloneFollow: CloneOrFollow, localPath: Path, remotePath: Path) extends Request
 }
 
 object Response {
@@ -37,7 +42,7 @@ object Response {
 
   sealed trait Response
 
-  case class RootKeyOK(hash: MutablePtr) extends Response
+  case class RootKeyOK(rootKey: String) extends Response
   case object FlushOK extends Response
 
   sealed trait Stat extends Response
@@ -67,6 +72,7 @@ object Response {
   case object MkdirOK extends Mkdir
   case object MkdirFolderReadOnly extends Mkdir
   case object MkdirNameCollision extends Mkdir
+  case object MkdirParentDoesntExist extends Mkdir
 
   sealed trait Rm extends Response
   case object RmOK extends Rm
@@ -77,5 +83,14 @@ object Response {
   case object MvOK extends Mv
   case object MvReadOnly extends Mv
   case object MvSrcDoesntExist extends Mv
+
+  sealed trait CloneFollow extends Response
+  case object CloneFollowOK extends CloneFollow
+  case object CloneFollowFolderIsReadOnly extends CloneFollow
+  case object CloneFollowNameCollision extends CloneFollow
+  case object CloneFollowParentDoesntExist extends CloneFollow
+  case object CloneFollowMalformedPath extends CloneFollow
+  case object CloneFollowRootNotFound extends CloneFollow
+  case object CloneFollowRemotePathBroken extends CloneFollow
 }
 
