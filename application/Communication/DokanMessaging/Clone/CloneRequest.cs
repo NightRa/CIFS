@@ -6,12 +6,14 @@ namespace Communication.DokanMessaging.Clone
 {
     public sealed class CloneRequest : IBinary
     {
-        public static byte TypeNum => 11;
-        public string HashPath { get; }
+        public static byte TypeNum => 10;
+        public string HashRemotePath { get; }
+        public string LocalPath { get; }
 
-        public CloneRequest(string hashPath)
+        public CloneRequest(string hashRemotePath, string localPath)
         {
-            HashPath = hashPath;
+            HashRemotePath = hashRemotePath;
+            LocalPath = localPath;
         }
 
         public byte[] ToBytes()
@@ -19,7 +21,8 @@ namespace Communication.DokanMessaging.Clone
             return
                 TypeNum
                 .Singleton()
-                .Concat(HashPath.ToBytes())
+                .Concat(HashRemotePath.ToBytes())
+                .Concat(LocalPath.ToBytes())
                 .ToArray();
         }
     }

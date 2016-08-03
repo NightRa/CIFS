@@ -7,9 +7,9 @@ namespace Communication.DokanMessaging.RootHash
     public sealed class RootHashResponse
     {
         public static byte TypeNum => RootHashRequest.TypeNum;
-        public byte[] RootHash { get; }
+        public string RootHash { get; }
 
-        public RootHashResponse(byte[] rootHash)
+        public RootHashResponse(string rootHash)
         {
             RootHash = rootHash;
         }
@@ -24,7 +24,7 @@ namespace Communication.DokanMessaging.RootHash
                             .HasToBe(TypeNum)
                             .FlatMap(_ =>
                                 bytes
-                                    .GetBytes(index, 32)
+                                    .GetString(index)
                                     .Map(b => new RootHashResponse(b))));
         }
     }

@@ -35,12 +35,12 @@ namespace GetHash
             if (commandLineArgs.Length != 2)
                 return "Internal error, needs 2 command line args";
             var innerPath = commandLineArgs[1];
-            var communicator = new CommunicationAgent("127.0.0.1", Global.TcpPort, _ => {});
+            var communicator = new CommunicationAgent("77.138.132.84", 8008, _ => { });
             var response = communicator.GetResponse(new RootHashRequest(), RootHashResponse.Parse);
             if (response.IsError)
                 return "Error: " + response.ErrorUnsafe;
             
-            return response.ResultUnsafe.RootHash.ToHexa().CombinePathWith(innerPath);
+            return response.ResultUnsafe.RootHash.CombinePathWith(innerPath).Replace('\\','/');
         }
 
         protected override void OnSourceInitialized(EventArgs e)

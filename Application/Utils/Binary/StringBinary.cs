@@ -17,6 +17,7 @@ namespace Utils.Binary
     {
         public static byte[] ToBytes(this string @this)
         {
+            @this = @this.Replace('\\', '/');
             var chars = @this.ToCharArray();
             var bytes = UTF8.GetBytes(chars);
             return bytes.Length.ToBytes().Concat(bytes).ToArray();
@@ -36,7 +37,8 @@ namespace Utils.Binary
                             index.Value += numOfBytes;
                             return chs;
                         })
-                        .Map(chs => new string(chs));
+                        .Map(chs => new string(chs))
+                        .Map(str => str.Replace('/', '\\'));
             }
             catch (Exception e)
             {

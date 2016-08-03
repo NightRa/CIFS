@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Utils.ArrayUtil;
 using Utils.IEnumerableUtil;
@@ -25,9 +26,20 @@ namespace Utils.StringUtil
                 .Concat(Enumerable.Repeat(pad, amountToTake))
                 .Take(amountToTake);
             return new string(chars.ToArray());
+        }
 
+        public const string Base58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxy";
 
-
+        public static byte[] FromBase58(this string s)
+        {
+            throw new KeyNotFoundException();
+        }
+        public static byte[] FromHex(this string hex)
+        {
+            return Enumerable.Range(0, hex.Length)
+                             .Where(x => x % 2 == 0)
+                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                             .ToArray();
         }
     }
 }

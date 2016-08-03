@@ -9,6 +9,7 @@ namespace Constants
 {
     public static class Global
     {
+        public static string LocalHost => "127.0.0.1";
         public static DateTime FilesTime => new DateTime(2016, 7, 21);
         public static DateTime FoldersTime => new DateTime(2016, 7, 20);
         public static TimeSpan AgentSleepTime => TimeSpan.FromMilliseconds(4.0);

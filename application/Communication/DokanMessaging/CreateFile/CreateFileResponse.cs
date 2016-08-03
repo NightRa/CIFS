@@ -9,12 +9,12 @@ namespace Communication.DokanMessaging.CreateFile
         public static byte TypeNum => CreateFileRequest.TypeNum;
         public bool IsReadOnlyFolder { get; }
         public bool IsNameCollision { get; }
-        public bool DoesParentFolderExist { get; }
-        public CreateFileResponse(bool isReadOnlyFolder, bool isNameCollision, bool doesParentFolderExist)
+        public bool PathToParentDoesntExist { get; }
+        public CreateFileResponse(bool isReadOnlyFolder, bool isNameCollision, bool pathToParentDoesntExist)
         {
             IsReadOnlyFolder = isReadOnlyFolder;
             IsNameCollision = isNameCollision;
-            DoesParentFolderExist = doesParentFolderExist;
+            PathToParentDoesntExist = pathToParentDoesntExist;
         }
 
         public static ParsingResult<CreateFileResponse> Parse(byte[] bytes)
@@ -30,8 +30,8 @@ namespace Communication.DokanMessaging.CreateFile
                                 {
                                     bool isReadOnly = x == 1;
                                     bool isNameCollision = x == 2;
-                                    bool doesParentFolderExist = x == 3;
-                                    return new CreateFileResponse(isReadOnly, isNameCollision, doesParentFolderExist);
+                                    bool doesPathToParentDoesntExist = x == 3;
+                                    return new CreateFileResponse(isReadOnly, isNameCollision, doesPathToParentDoesntExist);
                                 })));
         }
     }

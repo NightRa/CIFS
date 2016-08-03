@@ -98,7 +98,7 @@ namespace Dokan
                 return WriteToLog(DokanResult.InternalError, "Parsing error!!! " + creationRes.ErrorUnsafe);
             if (creationRes.ResultUnsafe.IsReadOnlyFolder)
                 return WriteToLog(DokanResult.AccessDenied, "Create file in read-only folder!!");
-            if (creationRes.ResultUnsafe.DoesParentFolderExist)
+            if (creationRes.ResultUnsafe.PathToParentDoesntExist)
                 return WriteToLog(DokanResult.PathNotFound, "Create file Path not found....!");
             if (creationRes.ResultUnsafe.IsNameCollision)
                 return WriteToLog(DokanResult.AlreadyExists, "Name collision in create file!");

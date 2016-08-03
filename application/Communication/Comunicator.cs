@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 using Communication.Messages;
 using Utils.DoubleUtil;
-using Utils.StreamUtil;
 
 namespace Communication
 {
-    internal sealed class Comunicator
+    public sealed class Comunicator
     {
         private string Ip { get; }
         private int Port { get; }
@@ -24,45 +20,26 @@ namespace Communication
             Log = log;
             Log("Initilized a communicator with for " + ip + " with port " + port);
         }
-
-        internal SendMessageResult SendMessage(byte[] data, TimeSpan timeout)
+        
+        public RecieveMessageResult SendAndRecieveMessage(byte[] data, TimeSpan timeout)
         {
             try
             {
                 Log("Trying to connect to server " + Ip + " at port " + Port);
                 TcpClient client = new TcpClient(Ip, Port);
+                var socket = client.Client;
                 Log("Connected!");
-                NetworkStream stream = client.GetStream();
                 Log("Seting timeout to " + timeout.TotalMilliseconds.ToInt() + "ms");
-                stream.WriteTimeout = timeout.TotalMilliseconds.ToInt();
+                socket.SendTimeout = timeout.TotalMilliseconds.ToInt();
                 Log("Writing data to stream: " + data.Length + "bytes");
-                stream.Write(data, 0, data.Length);
+                socket.Send(data);
+                socket.Disconnect(false);
                 Log("Ended writing");
-                stream.Close();
-                client.Close();
-                Log("Closing connection");
-                return new SendMessageResult.SuccessResult();
-            }
-            catch (Exception e)
-            {
-                return new SendMessageResult.FailureResult(e.ToString());
-            }
-        }
-
-        internal RecieveMessageResult RecieveMessage(TimeSpan timeout)
-        {
-            try
-            {
-                Log("Trying to connect to server " + Ip + " at port " + Port);
-                TcpClient client = new TcpClient(Ip, Port);
-                Log("Connected!");
-                NetworkStream stream = client.GetStream();
                 Log("Seting timeout to " + timeout.TotalMilliseconds.ToInt() + "ms");
-                stream.ReadTimeout = timeout.TotalMilliseconds.ToInt();
+                socket.ReceiveTimeout = timeout.TotalMilliseconds.ToInt();
                 Log("Reading data from stream");
-                byte[] data = stream.ReadToEnd();
+                data = ReadToEnd(socket);
                 Log("Ended reading " + data.Length + "bytes");
-                stream.Close();
                 client.Close();
                 Log("Closing connection");
                 return new RecieveMessageResult.RecieveSuccess(data);
@@ -70,6 +47,19 @@ namespace Communication
             catch (Exception e)
             {
                 return new RecieveMessageResult.RecieveFailure(e.ToString());
+            }
+        }
+
+        private static byte[] ReadToEnd(Socket socket)
+        {
+            List<byte> bytes = new List<byte>();
+            byte[] buffer = new byte[4 * 1024];
+            while (true)
+            {
+                int amount = socket.Receive(buffer);
+                if (amount == 0)
+                    return bytes.ToArray();
+                bytes.AddRange(buffer.Take(amount));
             }
         }
     }

@@ -31,7 +31,7 @@ namespace UnitTests
             var parsingResult = CreateFileResponse.Parse(bytes);
             Assert.IsTrue(parsingResult.IsResult);
             var res = parsingResult.ResultUnsafe;
-            Assert.IsFalse(res.DoesParentFolderExist);
+            Assert.IsFalse(res.PathToParentDoesntExist);
             Assert.IsFalse(res.IsNameCollision);
             Assert.IsFalse(res.IsReadOnlyFolder);
         }
@@ -44,7 +44,7 @@ namespace UnitTests
             var parsingResult = CreateFileResponse.Parse(bytes);
             Assert.IsTrue(parsingResult.IsResult);
             var res = parsingResult.ResultUnsafe;
-            Assert.IsFalse(res.DoesParentFolderExist);
+            Assert.IsFalse(res.PathToParentDoesntExist);
             Assert.IsFalse(res.IsNameCollision);
             Assert.IsTrue(res.IsReadOnlyFolder);
         }
@@ -57,7 +57,7 @@ namespace UnitTests
             var parsingResult = CreateFileResponse.Parse(bytes);
             Assert.IsTrue(parsingResult.IsResult);
             var res = parsingResult.ResultUnsafe;
-            Assert.IsFalse(res.DoesParentFolderExist);
+            Assert.IsFalse(res.PathToParentDoesntExist);
             Assert.IsTrue(res.IsNameCollision);
             Assert.IsFalse(res.IsReadOnlyFolder);
         }
@@ -70,7 +70,7 @@ namespace UnitTests
             var parsingResult = CreateFileResponse.Parse(bytes);
             Assert.IsTrue(parsingResult.IsResult);
             var res = parsingResult.ResultUnsafe;
-            Assert.IsTrue(res.DoesParentFolderExist);
+            Assert.IsTrue(res.PathToParentDoesntExist);
             Assert.IsFalse(res.IsNameCollision);
             Assert.IsFalse(res.IsReadOnlyFolder);
         }
@@ -299,12 +299,12 @@ namespace UnitTests
         public void TestRootHash()
         {
             var typeNum = ((byte) 0).Singleton();
-            var rootHashBytes = Rnd.NextBytes(256/8);
-            var bytes = typeNum.Concat(rootHashBytes).ToArray();
+            var rootHash = "asdja80sdjalsjd";
+            var bytes = typeNum.Concat(rootHash.ToBytes()).ToArray();
             var parsingResult = RootHashResponse.Parse(bytes);
             Assert.IsTrue(parsingResult.IsResult);
             var res = parsingResult.ResultUnsafe;
-            Assert.IsTrue(res.RootHash.ArrayEquals(rootHashBytes, (a, b) => a == b));
+            Assert.AreEqual(rootHash, res.RootHash);
         }
         [TestMethod]
         public void TestStat1()

@@ -63,19 +63,9 @@ namespace GetHash.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap CopyToClipboard {
+        internal static System.Drawing.Bitmap CopyToClipboard2 {
             get {
-                object obj = ResourceManager.GetObject("CopyToClipboard", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap CopyToClipboard1 {
-            get {
-                object obj = ResourceManager.GetObject("CopyToClipboard1", resourceCulture);
+                object obj = ResourceManager.GetObject("CopyToClipboard2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
