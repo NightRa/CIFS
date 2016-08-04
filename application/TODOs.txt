@@ -1,3 +1,0 @@
-- Add concurrency for file system
-- Add Preferences choosing
-- Open on startup - shortcut prob
