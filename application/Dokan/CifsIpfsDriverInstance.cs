@@ -24,9 +24,13 @@ namespace Dokan
 {
     public sealed class CifsIpfsDriverInstance : IDokanOperations
     {
-        private const FileAccess DataAccess = FileAccess.ReadData | FileAccess.WriteData | FileAccess.AppendData |
-                                              FileAccess.Execute |
-                                              FileAccess.GenericExecute | FileAccess.GenericWrite | FileAccess.GenericRead;
+        private const FileAccess DataAccess = FileAccess.ReadData       |
+                                              FileAccess.WriteData      |
+                                              FileAccess.AppendData     |
+                                              FileAccess.Execute        |
+                                              FileAccess.GenericExecute |
+                                              FileAccess.GenericWrite   |
+                                              FileAccess.GenericRead;
         public CommunicationAgent Communicator { get; }
         public Action<string> Log { get; }
 
@@ -63,6 +67,12 @@ namespace Dokan
                         var res = Communicator.GetResponse(new CreateFolderRequest(fileName), CreateFolderResponse.Parse);
                         if (res.IsError)
                             return WriteToLog(DokanResult.InternalError, "Parsing error!!! " + maybeStat.ErrorUnsafe);
+                        if (res.ResultUnsafe.NameCollosion)
+                            return WriteToLog(DokanResult.AlreadyExists, "Parsing error!!! " + maybeStat.ErrorUnsafe);
+                        if (res.ResultUnsafe.IsReadOnly)
+                            return WriteToLog(DokanResult.AccessDenied, "Parsing error!!! " + maybeStat.ErrorUnsafe);
+                        if (res.ResultUnsafe.PathToParentDoesntExist)
+                            return WriteToLog(DokanResult.PathNotFound, "Parsing error!!! " + maybeStat.ErrorUnsafe);
                         return DokanResult.Success;
                     case FileMode.Open:
                         if (stat.IsFile)
@@ -72,6 +82,7 @@ namespace Dokan
                         return DokanResult.Success;
                 }
             }
+            // file
             switch (mode)
             {
                 case FileMode.Open:
@@ -97,11 +108,11 @@ namespace Dokan
             if (creationRes.IsError)
                 return WriteToLog(DokanResult.InternalError, "Parsing error!!! " + creationRes.ErrorUnsafe);
             if (creationRes.ResultUnsafe.IsReadOnlyFolder)
-                return WriteToLog(DokanResult.AccessDenied, "Create file in read-only folder!!");
+                return WriteToLog(DokanResult.AccessDenied, "Create file in read-only folder!! " + fileName);
             if (creationRes.ResultUnsafe.PathToParentDoesntExist)
-                return WriteToLog(DokanResult.PathNotFound, "Create file Path not found....!");
+                return WriteToLog(DokanResult.PathNotFound, "Create file Path not found....! " + fileName);
             if (creationRes.ResultUnsafe.IsNameCollision)
-                return WriteToLog(DokanResult.AlreadyExists, "Name collision in create file!");
+                return WriteToLog(DokanResult.AlreadyExists, "Name collision in create file! " + fileName);
             return DokanResult.Success;
         }
 
@@ -112,18 +123,15 @@ namespace Dokan
 
             if (info.DeleteOnClose)
             {
-                var maybeStat = Communicator.GetResponse(new StatRequest(fileName), StatResponse.Parse);
-                if (maybeStat.IsError)
-                    Log("Parsing error!!! " + maybeStat.ErrorUnsafe);
+                var deleteResponse = Communicator.GetResponse(new DeleteRequest(fileName), DeleteResponse.Parse);
+                if (deleteResponse.IsError)
+                    Log("Parsing error!!! " + deleteResponse.ErrorUnsafe);
                 else
                 {
-                    var stat = maybeStat.ResultUnsafe;
-                    if (stat.EntryExists)
-                    {
-                        var res = Communicator.GetResponse(new DeleteRequest(fileName), DeleteResponse.Parse);
-                        if (res.IsError)
-                            Log("Parsing error!!! " + res.ErrorUnsafe);
-                    }
+                    if (deleteResponse.ResultUnsafe.PathDoesntExist)
+                        Log("delete request on file that doesnt exist" + fileName);
+                    if (deleteResponse.ResultUnsafe.IsReadOnly)
+                        Log("delete request when folder is readonly " + fileName);
                 }
             }
         }
@@ -138,7 +146,8 @@ namespace Dokan
         {
             Log("ReadFile " + fileName + ", Buffer length: " + buffer.Length + ", offset: " + offset);
             bytesRead = 0;
-            var res = Communicator.GetResponse(new ReadFileRequest(fileName, offset, buffer.Length), ReadFileResponse.Parse);
+            var readRequest = new ReadFileRequest(fileName, offset, buffer.Length);
+            var res = Communicator.GetResponse(readRequest, ReadFileResponse.Parse);
             if (res.IsError)
                 return WriteToLog(DokanResult.InternalError, "Parsing error!!! " + res.ErrorUnsafe);
             if (!res.ResultUnsafe.DoesFileExist)
@@ -232,6 +241,8 @@ namespace Dokan
                 return WriteToLog(DokanResult.InternalError, "Parsing error!!! " + maybeStat.ErrorUnsafe);
             if (!maybeStat.ResultUnsafe.EntryExists)
                 return DokanResult.PathNotFound;
+            if (maybeStat.ResultUnsafe.IsFolder)
+                return DokanResult.FileNotFound;
             return DokanResult.Success;
         }
 
@@ -255,15 +266,9 @@ namespace Dokan
             var maybeNodeDataOld = Communicator.GetResponse(new StatRequest(oldName), StatResponse.Parse);
             var maybeNodeDataNew = Communicator.GetResponse(new StatRequest(newName), StatResponse.Parse);
             if (maybeNodeDataOld.IsError)
-            {
-                Log("Parsing error!!!" + maybeNodeDataOld.ErrorUnsafe);
-                return DokanResult.InternalError;
-            }
+                return WriteToLog(DokanResult.InternalError, "Parsing error!!!" + maybeNodeDataOld.ErrorUnsafe);
             if (maybeNodeDataNew.IsError)
-            {
-                Log("Parsing error!!!" + maybeNodeDataNew.ErrorUnsafe);
-                return DokanResult.InternalError;
-            }
+                return WriteToLog(DokanResult.InternalError, "Parsing error!!!" + maybeNodeDataNew.ErrorUnsafe);
             var nodeDataOld = maybeNodeDataOld.ResultUnsafe;
             var nodeDataNew = maybeNodeDataNew.ResultUnsafe;
             bool exist = false;
@@ -276,6 +281,12 @@ namespace Dokan
             {
                 info.Context = null;
                 var moveRes = Communicator.GetResponse(new MoveRequest(oldName, newName), MoveResponse.Parse);
+                if (moveRes.IsError)
+                    return WriteToLog(DokanResult.InternalError, "Parsing error!!!" + moveRes.ErrorUnsafe);
+                if (moveRes.ResultUnsafe.SrcDoesntExist)
+                    return WriteToLog(DokanResult.FileNotFound, "move file SrcDoesntExist " + moveRes.ErrorUnsafe);
+                if (moveRes.ResultUnsafe.SrcOrDesrReadOnly)
+                    return WriteToLog(DokanResult.AccessDenied, "move file SrcOrDesrReadOnly " + moveRes.ErrorUnsafe);
                 return DokanResult.Success;
             }
             if (replace)
@@ -283,17 +294,15 @@ namespace Dokan
                 info.Context = null;
                 var deleteRes = Communicator.GetResponse(new DeleteRequest(newName), DeleteResponse.Parse);
                 if (deleteRes.IsError)
-                {
-                    Log("Parsing error!!!" + deleteRes.ErrorUnsafe);
-                    return DokanResult.InternalError;
-                }
+                    return WriteToLog(DokanResult.InternalError, "Parsing error!!!" + deleteRes.ErrorUnsafe);
 
                 var moveRes = Communicator.GetResponse(new MoveRequest(oldName, newName), MoveResponse.Parse);
                 if (moveRes.IsError)
-                {
-                    Log("Parsing error!!!" + moveRes.ErrorUnsafe);
-                    return DokanResult.InternalError;
-                }
+                    return WriteToLog(DokanResult.InternalError, "Parsing error!!!" + moveRes.ErrorUnsafe);
+                if (moveRes.ResultUnsafe.SrcDoesntExist)
+                    return WriteToLog(DokanResult.FileNotFound, "move file SrcDoesntExist " + moveRes.ErrorUnsafe);
+                if (moveRes.ResultUnsafe.SrcOrDesrReadOnly)
+                    return WriteToLog(DokanResult.AccessDenied, "move file SrcOrDesrReadOnly " + moveRes.ErrorUnsafe);
                 return DokanResult.Success;
             }
             return DokanResult.FileExists;
@@ -353,14 +362,19 @@ namespace Dokan
             return DokanResult.Success;
         }
 
-        public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName,
+        public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features,
+            out string fileSystemName,
             DokanFileInfo info)
         {
             Log("GetVolumeInformation");
             volumeLabel = "DOKAN";
-            fileSystemName = "NTFS";
+            fileSystemName = "uBox";
 
-            features = FileSystemFeatures.CasePreservedNames | FileSystemFeatures.CaseSensitiveSearch | FileSystemFeatures.PersistentAcls | FileSystemFeatures.SupportsRemoteStorage | FileSystemFeatures.UnicodeOnDisk;
+            features = FileSystemFeatures.CasePreservedNames    |
+                       FileSystemFeatures.CaseSensitiveSearch   |
+                       FileSystemFeatures.PersistentAcls        |
+                       FileSystemFeatures.SupportsRemoteStorage |
+                       FileSystemFeatures.UnicodeOnDisk;
             return DokanResult.Success;
         }
 
@@ -417,7 +431,7 @@ namespace Dokan
             if (maybeStat.IsError)
                 return WriteToLog(DokanResult.InternalError, "Parsing error!!! " + maybeStat.ErrorUnsafe);
             if (!maybeStat.ResultUnsafe.EntryExists)
-                return DokanResult.PathNotFound;
+                return WriteToLog(DokanResult.PathNotFound, "Find stream when file not found...");
             return DokanResult.Success;
         }
     }
