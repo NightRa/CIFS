@@ -1,0 +1,21 @@
+- Language substitution
+- IPFS
+- Dokan
+- Registry, Windows integration (icon, right click, taskbar, startup)
+- WPF
+- Interpocess process communication. Concur
+
+
+3 mins - Overreview - brief: us vs dropbpox vs drive. why us? what is our project?
+		usages: Private use, File sharing, Course example
+6 mins - Ilan: language substitution + IPFS: hashes + p2p technices, moon, 
+3 mins - Yuval - dokan, registry, interprocess communication, GUI,
+1 min -
+	- key base
+	- suggest changes (Wikipedia/git style)
+1~3 min  - Clip / 2 mins - Example
+-------------------------------------
+
+
+-- style - at last
+http://www.smiletemplates.com/powerpoint-templates/connection-between-computers/04986/

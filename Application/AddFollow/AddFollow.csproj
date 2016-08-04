@@ -34,7 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>CifsIcon.ico</ApplicationIcon>
+    <ApplicationIcon>uBoxIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Agents">
@@ -110,10 +110,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="CifsIcon.ico" />
+    <EmbeddedResource Include="Resources\CopyToClipboard.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\CopyToClipboard.png" />
+    <Resource Include="uBoxIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

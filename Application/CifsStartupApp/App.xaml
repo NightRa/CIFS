@@ -25,7 +25,7 @@
         </ContextMenu>
 
         <tb:TaskbarIcon x:Key="NotifyIcon"
-                    IconSource="Resources/CifsIcon.ico"
+                    IconSource="Resources/uBoxIcon.ico"
                     ToolTipText="Double-click for window, right-click for menu"
                     DoubleClickCommand="{Binding ShowCifsInExplorerCommand}"
                     ContextMenu="{StaticResource SysTrayMenu}">

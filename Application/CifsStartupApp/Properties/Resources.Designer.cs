@@ -61,32 +61,12 @@ namespace CifsStartupApp.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon CifsIcon {
-            get {
-                object obj = ResourceManager.GetObject("CifsIcon", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Close {
             get {
                 object obj = ResourceManager.GetObject("Close", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon EmbeddedIcon {
-            get {
-                object obj = ResourceManager.GetObject("EmbeddedIcon", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
             }
         }
         
@@ -107,6 +87,16 @@ namespace CifsStartupApp.Properties {
             get {
                 object obj = ResourceManager.GetObject("ShortcutIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon uBoxIconEmbedded {
+            get {
+                object obj = ResourceManager.GetObject("uBoxIconEmbedded", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
     }

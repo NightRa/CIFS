@@ -66,13 +66,15 @@ namespace Dokan
                             return DokanResult.FileExists;
                         var res = Communicator.GetResponse(new CreateFolderRequest(fileName), CreateFolderResponse.Parse);
                         if (res.IsError)
-                            return WriteToLog(DokanResult.InternalError, "Parsing error!!! " + maybeStat.ErrorUnsafe);
+                            return WriteToLog(DokanResult.InternalError, "Parsing error!!! " + res.ErrorUnsafe);
                         if (res.ResultUnsafe.NameCollosion)
-                            return WriteToLog(DokanResult.AlreadyExists, "Parsing error!!! " + maybeStat.ErrorUnsafe);
+                            return WriteToLog(DokanResult.AlreadyExists, "Name collision in create folder! " + fileName);
                         if (res.ResultUnsafe.IsReadOnly)
-                            return WriteToLog(DokanResult.AccessDenied, "Parsing error!!! " + maybeStat.ErrorUnsafe);
+                            return WriteToLog(DokanResult.AccessDenied, "Create folder in read-only folder!! " + fileName);
                         if (res.ResultUnsafe.PathToParentDoesntExist)
-                            return WriteToLog(DokanResult.PathNotFound, "Parsing error!!! " + maybeStat.ErrorUnsafe);
+                            return WriteToLog(DokanResult.PathNotFound, "Create folder Path not found....! " + fileName);
+                        if (res.ResultUnsafe.InvalidName)
+                            return WriteToLog(DokanResult.Error, "Create folder Invalid name....! " + fileName);
                         return DokanResult.Success;
                     case FileMode.Open:
                         if (stat.IsFile)
@@ -113,6 +115,8 @@ namespace Dokan
                 return WriteToLog(DokanResult.PathNotFound, "Create file Path not found....! " + fileName);
             if (creationRes.ResultUnsafe.IsNameCollision)
                 return WriteToLog(DokanResult.AlreadyExists, "Name collision in create file! " + fileName);
+            if (creationRes.ResultUnsafe.InvalidName)
+                return WriteToLog(DokanResult.Error, "Invalid name in create file! " + fileName);
             return DokanResult.Success;
         }
 

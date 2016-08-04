@@ -34,7 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>CifsIcon.ico</ApplicationIcon>
+    <ApplicationIcon>uBoxIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Communication">
@@ -110,9 +110,6 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="CifsIcon.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\CopyToClipboard.png" />
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +117,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\CopyToClipboard2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="uBoxIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

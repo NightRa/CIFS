@@ -34,7 +34,7 @@ namespace CifsStartupApp
         public void InitilizeIcon()
         {
             var iconName = nameof(CifsStartupApp) + "." + nameof(Resources) + "." +
-                           nameof(Properties.Resources.EmbeddedIcon) + ".ico";
+                           nameof(Properties.Resources.uBoxIconEmbedded) + ".ico";
             if (!CifsIconPath.DoesFileExists(Log))
                 using (var iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(iconName))
                 using (var fileStream = File.Create(CifsIconPath))
