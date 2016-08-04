@@ -18,7 +18,7 @@
         </Grid.ColumnDefinitions>
         <TextBlock Text="Folder's address:" VerticalAlignment="Center" Margin="20,0,0,0"/>
         <Button Grid.Row="1" Grid.Column="1" Margin="0,4,48,12" Name="CopyToClipBoardButton" ToolTip="Copy to clipboard" Click="CopyToClipBoardButton_OnClick">
-            <Image Source="/Resources/CopyToClipboard2.png" />
+            <Image Source="/Resources/CopyToClipboard.png" />
         </Button>
         <TextBox Grid.Row="1" Margin="25,4,2,12" VerticalContentAlignment="Center" IsReadOnly="True" Name="AddressTextBox" Background="#F4F4F4"/>
     </Grid>

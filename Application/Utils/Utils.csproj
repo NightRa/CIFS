@@ -54,7 +54,7 @@
     <Compile Include="DoubleUtil\DoubleExtensions.cs" />
     <Compile Include="FileSystemUtil\FileSystemExtensions.cs" />
     <Compile Include="FunctionUtil\FuncExtensions.cs" />
-    <Compile Include="IEnumerableUtil\IEnumerableExtensions.cs" />
+    <Compile Include="IEnumerableUtil\EnumerableExtensions.cs" />
     <Compile Include="LogHandling\Log.cs" />
     <Compile Include="LogHandling\LogMessage.cs" />
     <Compile Include="LogHandling\MessageEventHandler.cs" />
@@ -72,9 +72,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Binary\BoolBinary.cs" />
     <Compile Include="RandomUtils\RandomExtensions.cs" />
-    <Compile Include="StreamUtil\StreamExtensions.cs" />
+    <Compile Include="SocketUtils\SocketExtensions.cs" />
     <Compile Include="StringUtil\StringExtensions.cs" />
-    <Compile Include="TaskUtils\TaskExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using Utils.IEnumerableUtil;
-using Utils.LogHandling;
 
-namespace Utils
+namespace Utils.LogHandling
 {
     public sealed class Log
     {
@@ -38,11 +36,12 @@ namespace Utils
 
             return str.ToString();
         }
-        private static readonly object fileLock = new object();
+
         public static Action<string> InitilizeInteractive(string logFileLocation)
         {
             var log = new Log();
-           
+            object fileLock = new object();
+
             var logFile = File.CreateText(logFileLocation);
             log.MessageAdded += (sender, args) =>
             {

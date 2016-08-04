@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using IWshRuntimeLibrary;
-using static System.Environment;
 using File = System.IO.File;
 
 namespace Utils.FileSystemUtil
 {
     public static class FileSystemExtensions
     {
-        public static string GetPath(this SpecialFolder @this)
+        public static string GetPath(this Environment.SpecialFolder @this)
         {
-            return GetFolderPath(@this);
+            return Environment.GetFolderPath(@this);
         }
 
         public static DirectoryInfo GetDirectoryInfo(this string @this)
@@ -58,7 +54,7 @@ namespace Utils.FileSystemUtil
         public static void CreateDirectoryIfDoesntExist(this string folderPath, FileAttributes additionalAttributes, Action<string> log)
         {
             if (!folderPath.DoesFolderExists(log))
-                folderPath.CreateDirectory(FileAttributes.Hidden, log);
+                folderPath.CreateDirectory(additionalAttributes, log);
         }
         public static byte[] ReadAllBytes(this string filePath)
         {
@@ -71,6 +67,11 @@ namespace Utils.FileSystemUtil
             log("Creating shortcut to " + executablePath + " at " + destinationPath);
             var wsh = new IWshShell_Class();
             var shortcut = wsh.CreateShortcut(destinationPath) as IWshShortcut;
+            if (shortcut == null)
+            {
+                log("Creating shoretcut ERROR!");
+                return;
+            }
             shortcut.TargetPath = executablePath;
             shortcut.IconLocation = iconPath;
             shortcut.Save();

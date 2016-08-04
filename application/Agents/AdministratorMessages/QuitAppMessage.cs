@@ -4,7 +4,7 @@
     {
         public override string AsString()
         {
-            return "Quit app";
+            return "Quit app request";
         }
     }
 }

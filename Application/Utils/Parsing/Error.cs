@@ -32,11 +32,7 @@ namespace Utils.Parsing
         {
             return ErrorUnsafe;
         }
-
-        public static implicit operator Error<TResult>(Error<object> other)
-        {
-            return new Error<TResult>(other.ErrorUnsafe);
-        }
+        
         public override ParsingResult<TOther> Convert<TOther>()
         {
             return new Error<TOther>(ErrorUnsafe);

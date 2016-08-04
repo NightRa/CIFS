@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Utils.OptionUtil;
 using static System.Environment;
 
@@ -9,10 +10,6 @@ namespace Utils.FunctionUtil
 {
     public static class FuncExtensions
     {
-        public static Action<A> CombineWith<A, B>(this Action<B> act2, Func<A, B> func1)
-        {
-            return a => act2(func1(a));
-        }
         public static void CatchErrors(this Action @this, Action<string> log, string message)
         {
             try
@@ -24,17 +21,14 @@ namespace Utils.FunctionUtil
                 log(message + NewLine + e);
             }
         }
-        public static Option<T> CatchErrors<T>(this Func<T> @this)
-            where T: struct 
+        public static void DoAsyncBackground(this Action @this, string threadName, Action<string> log)
         {
-            try
-            {
-                return Opt.Some(@this());
-            }
-            catch (Exception)
-            {
-                return Opt.None<T>();
-            }
+            log("Starting a thread named " + threadName);
+            Thread t = new Thread(() => @this.CatchErrors(log, "Thread " + threadName + "threw an exception"));
+            t.Name = threadName;
+            t.IsBackground = true;
+            t.Priority = ThreadPriority.BelowNormal;
+            t.Start();
         }
 
     }

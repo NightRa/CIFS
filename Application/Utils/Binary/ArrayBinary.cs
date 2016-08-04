@@ -11,11 +11,10 @@ namespace Utils.Binary
     {
         public static byte[] ToBytes<T>(this T[] @this, EncodeFunc<T> encode)
         {
-            return 
-                @this
-                .Select(encode.Invoke)
-                .Aggregate(@this.Length.ToBytes().AsEnumerable(), (acc, bytes) => acc.Concat(bytes))
-                .ToArray();
+            return
+                @this.Length.ToBytes()
+                    .Concat(@this.SelectMany(encode.Invoke))
+                    .ToArray();
         }
 
         public static ParsingResult<T[]> GetArray<T>(this byte[] @this, Box<int> index, ParseFunc<T> parse)

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
@@ -13,12 +10,11 @@ using Agents.AdministratorMessages;
 using CifsPreferences;
 using Constants;
 using Hardcodet.Wpf.TaskbarNotification;
-using Utils;
 using Utils.ConcurrencyUtils;
 using Utils.DoubleUtil;
 using Utils.FileSystemUtil;
 using Utils.FunctionUtil;
-using static System.Environment;
+using Utils.LogHandling;
 using static System.Environment.SpecialFolder;
 using static Constants.Global;
 
@@ -32,6 +28,12 @@ namespace CifsStartupApp
         private static InitilizationData init = null;
         protected override void OnStartup(StartupEventArgs e)
         {
+            var processName = Process.GetCurrentProcess().ProcessName;
+            if (Process.GetProcessesByName(processName).Length > 1)
+            {
+                Application.Current.Shutdown();
+                return;
+            }
             base.OnStartup(e);
             Thread.CurrentThread.Name = "MainAppThread";
             notifyIcon = (TaskbarIcon)FindResource("NotifyIcon");
@@ -93,6 +95,31 @@ namespace CifsStartupApp
         public static bool IsDokanRunning()
         {
             return Global.DokanRunningObject.IsHeld();
+        }
+
+        public static void CreateDesktopShortcut()
+        {
+            try
+            {
+                var path = Desktop.GetPath().CombinePathWith(StartUpShortcutName);
+                Assembly.GetExecutingAssembly().Location.CreateShortcut(path, CifsIconPath, log);
+            }
+            catch
+            {
+            }
+        }
+
+        public static bool CanCreateDesktopShortcut()
+        {
+            try
+            {
+                var path = Desktop.GetPath().CombinePathWith(StartUpShortcutName);
+                return !path.DoesFileExists(log);
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

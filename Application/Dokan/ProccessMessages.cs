@@ -1,6 +1,5 @@
 ﻿using Agents;
 using Agents.AdministratorMessages;
-using Agents.DokanMessages;
 using Agents.DokanSupervisorMessages;
 
 namespace Dokan

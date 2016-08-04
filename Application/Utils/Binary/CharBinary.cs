@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Utils.ArrayUtil;
-using Utils.FunctionUtil;
+﻿using System.Linq;
 using Utils.GeneralUtils;
-using Utils.OptionUtil;
 using Utils.Parsing;
-using static System.Text.Encoding;
-using static Utils.OptionUtil.Opt;
 
 namespace Utils.Binary
 {

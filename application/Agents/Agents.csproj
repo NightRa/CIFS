@@ -46,22 +46,15 @@
     <Compile Include="AdministratorMessages\DokanExitedSuccessfullyMessage.cs" />
     <Compile Include="AdministratorMessages\InternalErrorMessage.cs" />
     <Compile Include="AdministratorMessages\QuitAppMessage.cs" />
-    <Compile Include="DokanMessages\DokanMessage.cs" />
     <Compile Include="DokanSupervisorMessages\DokanThrewExceptionMessage.cs" />
-    <Compile Include="DokanMessages\QuitDokanMessage.cs" />
     <Compile Include="DokanSupervisorMessages\QuitDokanMessage.cs" />
     <Compile Include="DokanSupervisorMessages\UnmountedSuccessfullyMessage.cs" />
     <Compile Include="DokanSupervisorMessages\DokanSupervisorMessage.cs" />
-    <Compile Include="IndexRequest\IndexRequestMessage.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="Mail.cs" />
-    <Compile Include="ThreadsExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="AddFollowMessages\" />
-    <Folder Include="IndexResponse\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

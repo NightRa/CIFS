@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Utils.ArrayUtil;
 using Utils.GeneralUtils;
-using Utils.OptionUtil;
 using Utils.Parsing;
 using static System.Text.Encoding;
-using static System.Text.UnicodeEncoding;
-using static Utils.OptionUtil.Opt;
-using Convert = System.Convert;
 
 namespace Utils.Binary
 {
@@ -21,7 +14,6 @@ namespace Utils.Binary
             var chars = @this.ToCharArray();
             var bytes = UTF8.GetBytes(chars);
             return bytes.Length.ToBytes().Concat(bytes).ToArray();
-                ;
         }
 
         public static ParsingResult<string> GetString(this byte[] @this, Box<int> index)

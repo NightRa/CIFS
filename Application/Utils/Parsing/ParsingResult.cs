@@ -16,7 +16,6 @@ namespace Utils.Parsing
         public abstract string ErrorUnsafe { get; }
 
         public abstract ParsingResult<TOther> Convert<TOther>();
-
         public abstract ParsingResult<TOther> Map<TOther>(Func<TResult, TOther> mapFunc);
         public abstract ParsingResult<TOther> FlatMap<TOther>(Func<TResult, ParsingResult<TOther>> mapFunc);
 

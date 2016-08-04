@@ -13,7 +13,7 @@ namespace Agents.DokanSupervisorMessages
 
         public override string AsString()
         {
-            return "Dokan threw exception: " + Environment.NewLine + this.Exception;
+            return "Dokan threw exception: " + Environment.NewLine + Exception;
         }
     }
 }

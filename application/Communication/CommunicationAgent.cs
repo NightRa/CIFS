@@ -28,8 +28,8 @@ namespace Communication
             lock (ProtectCode)
             {
                 var respond = Comunicator.SendAndRecieveMessage(request.ToBytes(), SendMessageTimeout);
-                var responseFailure = respond as RecieveMessageResult.RecieveFailure;
-                var responseSuccess = respond as RecieveMessageResult.RecieveSuccess;
+                var responseFailure = respond as MessagingResult.Failure;
+                var responseSuccess = respond as MessagingResult.Success;
                 if (responseFailure != null)
                     return Parse.Error<TResponse>("Couldn't send message.. " + responseFailure.FailureMessage);
                 if (responseSuccess != null)

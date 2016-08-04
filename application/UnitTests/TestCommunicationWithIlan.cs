@@ -205,8 +205,8 @@ namespace UnitTests
             var timeout = TimeSpan.FromSeconds(10);
             var message = new byte[] {1, 2, 3, 4};
             var result = communicator.Comunicator.SendAndRecieveMessage(message, timeout);
-            var responseFailure = result as RecieveMessageResult.RecieveFailure;
-            var responseSuccess = result as RecieveMessageResult.RecieveSuccess;
+            var responseFailure = result as MessagingResult.Failure;
+            var responseSuccess = result as MessagingResult.Success;
             if (responseFailure != null)
                 Assert.Fail(responseFailure.FailureMessage);
             Assert.IsTrue(responseSuccess != null);

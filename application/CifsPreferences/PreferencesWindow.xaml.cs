@@ -1,17 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Constants;
-using Utils;
 using Utils.ArrayUtil;
 using Utils.IEnumerableUtil;
 using Utils.StringUtil;
@@ -60,7 +50,7 @@ namespace CifsPreferences
 
         protected override void OnSourceInitialized(EventArgs e)
         {
-            Gui.IconRemover.RemoveIcon(this);
+           // Gui.IconRemover.RemoveIcon(this);
         }
 
         private void CancelButton_OnClick(object sender, RoutedEventArgs e)

@@ -11,29 +11,24 @@ namespace Utils.RandomUtils
         {
             unchecked
             {
-                return (char)@this.Next(1, 1000);
+                return (char) @this.Next(1, 1000);
             }
         }
 
         public static string NextString(this Random @this, int length)
         {
-            lock (@this)
-            {
-                var chs =
-                    Enumerable.Repeat(0, length)
-                        .Select(_ => @this.NextChar())
-                        .ToArray();
-                return new string(chs);
-            }
+            var chs =
+                Enumerable.Repeat(0, length)
+                    .Select(_ => @this.NextChar())
+                    .ToArray();
+            return new string(chs);
         }
+
         public static byte[] NextBytes(this Random @this, int length)
         {
-            lock (@this)
-            {
-                var bytes = new byte[length];
-                @this.NextBytes(bytes);
-                return bytes;
-            }
+            var bytes = new byte[length];
+            @this.NextBytes(bytes);
+            return bytes;
         }
     }
 }

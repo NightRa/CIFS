@@ -1,7 +1,7 @@
 using System;
 using Utils.StringUtil;
 
-namespace Utils
+namespace Utils.LogHandling
 {
     public sealed class LogMessage
     {

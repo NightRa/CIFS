@@ -61,8 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Messages\RecieveMessageResult.cs" />
-    <Compile Include="Messages\SendMessageResult.cs" />
+    <Compile Include="Messages\MessagingResult.cs" />
     <Compile Include="CommunicationAgent.cs" />
     <Compile Include="DokanMessaging\CloneOrFollow\CloneOrFollowRequest.cs" />
     <Compile Include="DokanMessaging\CloneOrFollow\CloneOrFollowResponse.cs" />

@@ -58,7 +58,6 @@ namespace FileSystem.Entries
             return $"File: {this.Hash}";
         }
 
-        // TODO: Not Here!!! Change
         public int Write(byte[] buffer, long offset, bool rewriteAll)
         {
             if (rewriteAll)

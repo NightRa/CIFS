@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using FileSystem.Entries;
-using Utils;
 using Utils.Binary;
 using Utils.GeneralUtils;
-using Utils.OptionUtil;
 using Utils.Parsing;
 using static Constants.Global;
-using static Utils.OptionUtil.Opt;
 
 namespace CifsPreferences
 {
@@ -31,7 +25,8 @@ namespace CifsPreferences
 
         public byte[] ToBytes()
         {
-            return OpenOnStartup
+            return
+                OpenOnStartup
                 .ToBytes()
                 .Concat(DriverChar.ToBytes())
                 .ToArray();

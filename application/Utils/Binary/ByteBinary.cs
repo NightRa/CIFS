@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Utils.GeneralUtils;
 using Utils.Parsing;
 
@@ -13,17 +14,14 @@ namespace Utils.Binary
             var errorMessage = "Get byte when index out of range: " + index.Value + ", range: 0.." + (@this.Length - 1);
             return Parse.Error<byte>(errorMessage);
         }
+
         public static ParsingResult<byte[]> GetBytes(this byte[] @this, Box<int> index, int amount)
         {
-            var bytes = new List<byte>(amount);
-            for (int i = 0; i < amount; i++)
-            {
-                var maybeByte = @this.GetByte(index);
-                if (maybeByte.IsError)
-                    return Parse.Error<byte[]>("Array parsing error at index " + i + ": " + maybeByte.ErrorUnsafe);
-                bytes.Add(maybeByte.ResultUnsafe);
-            }
-            return Parse.Return(bytes.ToArray());
+            return
+                Enumerable.Repeat(0, amount)
+                    .Select(_ => @this.GetByte(index))
+                    .Flatten()
+                    .Map(Enumerable.ToArray);
         }
 
         public static ParsingResult<byte> HasToBe(this byte actual, byte expected)

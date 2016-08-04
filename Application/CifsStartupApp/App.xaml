@@ -11,6 +11,11 @@
                     <Image Width="16" Height="16" Source="/Resources/Preferences.png"/>
                 </MenuItem.Icon>
             </MenuItem>
+            <MenuItem Header="Create desktop shortcut" Command="{Binding CreateDesktopShortcutCommand}">
+                <MenuItem.Icon>
+                    <Image Width="16" Height="16" Source="/Resources/ShortcutIcon.png"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator />
             <MenuItem Header="Exit" Command="{Binding ExitCifsCommand}">
                 <MenuItem.Icon>

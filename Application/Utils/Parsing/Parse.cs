@@ -15,11 +15,6 @@ namespace Utils.Parsing
         {
             return new Error<TResult>(error);
         }
-
-        public static ParsingResult<TResult> Flatten<TResult>(this ParsingResult<ParsingResult<TResult>> @this)
-        {
-            return @this.FlatMap(x => x);
-        }
         public static ParsingResult<IEnumerable<TResult>> Flatten<TResult>(this IEnumerable<ParsingResult<TResult>> @this)
         {
             List<TResult> results = new List<TResult>();
