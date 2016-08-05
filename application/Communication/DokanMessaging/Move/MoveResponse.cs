@@ -34,5 +34,10 @@ namespace Communication.DokanMessaging.Move
                                         return new MoveResponse(srcDoesntExist, srcOrDesrReadOnly);
                                     })));
         }
+
+        public override string ToString()
+        {
+            return $"SrcDoesntExist: {SrcDoesntExist}, SrcOrDesrReadOnly: {SrcOrDesrReadOnly}";
+        }
     }
 }

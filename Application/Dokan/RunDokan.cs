@@ -5,6 +5,7 @@ using FileSystem.Entries;
 using Agents;
 using Agents.AdministratorMessages;
 using Agents.DokanSupervisorMessages;
+using Communication;
 using Constants;
 using Utils.FunctionUtil;
 
@@ -66,6 +67,8 @@ namespace Dokan
         {
             try
             {
+                var communicator = new CommunicationAgent("77.138.132.84", Global.TcpPort, log);
+                //CifsIpfsDriverInstance instance = new CifsIpfsDriverInstance(communicator, log);
                 CifsDriverInstance instance = new CifsDriverInstance(index, log);
                 log("Trying to mount Dokan: " + driverChar + ":\\");
                 instance.Mount(driverChar + ":\\", dokanOptions, numThreads);

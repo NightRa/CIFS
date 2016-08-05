@@ -19,7 +19,7 @@ namespace Communication
             Log = log;
             Log("Initilized a communicator with for " + ip + " with port " + port);
         }
-        
+
         public MessagingResult SendAndRecieveMessage(byte[] data, TimeSpan timeout)
         {
             try
@@ -37,11 +37,11 @@ namespace Communication
                 Log("Seting read timeout to " + timeout.TotalMilliseconds.ToInt() + "ms");
                 socket.ReceiveTimeout = timeout.TotalMilliseconds.ToInt();
                 Log("Reading data from stream");
-                data = socket.ReadToEnd();
-                Log("Ended reading " + data.Length + "bytes");
+                var newData = socket.ReadToEnd();
+                Log("Ended reading " + newData.Length + "bytes");
                 client.Close();
                 Log("Closing connection");
-                return new MessagingResult.Success(data);
+                return new MessagingResult.Success(newData);
             }
             catch (Exception e)
             {

@@ -61,6 +61,11 @@ namespace FileSystem.Entries
                                                     new Info(name, size, isReadOnly == 0, isFolder == 1)
                                                 ))));
             }
+
+            public override string ToString()
+            {
+                return $"Name: {Name}, Length: {Length}, IsFolder: {IsFolder}, IsFile: {IsFile}, IsReadOnly: {IsReadOnly}";
+            }
         }
     }
 }

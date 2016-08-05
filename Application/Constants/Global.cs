@@ -9,7 +9,7 @@ namespace Constants
 {
     public static class Global
     {
-        public static string StartUpShortcutName => "CIFS.lnk";
+        public static string StartUpShortcutName => "uBox.lnk";
         public static string LocalHost => "127.0.0.1";
         public static int TcpPort => 8008;
         public static DateTime FilesTime => new DateTime(2016, 7, 21);
@@ -17,8 +17,8 @@ namespace Constants
         public static TimeSpan AgentSleepTime => TimeSpan.FromMilliseconds(4.0);
 
         public static readonly object DokanRunningObject = new object();
-        public static readonly string CifsDirectoryPath = MyDocuments.GetPath().CombinePathWith("CIFS");
-        public static readonly string CifsIconPath = CifsDirectoryPath.CombinePathWith("CifsIcon.ico");
+        public static readonly string CifsDirectoryPath = MyDocuments.GetPath().CombinePathWith("uBox");
+        public static readonly string CifsIconPath = CifsDirectoryPath.CombinePathWith("uBoxIcon.ico");
         public static readonly string CifsPreferencesDataPath = CifsDirectoryPath.CombinePathWith("Preferences.dat");
         public static readonly string CifsIndexDataPath = CifsDirectoryPath.CombinePathWith("Index.dat");
 

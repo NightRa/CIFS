@@ -40,5 +40,10 @@ namespace Communication.DokanMessaging.CreateFolder
                                         return new CreateFolderResponse(isReadOnly, isNameCollision, pathToParentDoesntExist, invalidName);
                                     })));
         }
+
+        public override string ToString()
+        {
+            return $"IsReadOnly: {IsReadOnly}, NameCollosion: {NameCollosion}, PathToParentDoesntExist: {PathToParentDoesntExist}, InvalidName: {InvalidName}";
+        }
     }
 }

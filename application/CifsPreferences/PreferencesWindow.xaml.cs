@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Windows;
 using Constants;
 using Utils.ArrayUtil;
@@ -23,7 +24,9 @@ namespace CifsPreferences
             set
             {
                 currentPrefferences = value;
-                ApplyButton.IsEnabled = !currentPrefferences.Equals(OriginalPreferences);
+                bool isValidIp = IsValidIp(currentPrefferences.IndexIp);
+                bool preferencasChanged = !currentPrefferences.Equals(OriginalPreferences);
+                ApplyButton.IsEnabled = isValidIp && preferencasChanged;
             }
         }
         public Action<Preferences> OnPreferencesApplied { get; }
@@ -44,13 +47,7 @@ namespace CifsPreferences
                 .OrderBy(ch => ch.DriverChar)
                 .Iter(ch => DriverChars.Items.Add(ch));
             this.MountOnStartupCheckBox.IsChecked = currentPrefferences.OpenOnStartup;
-        }
-
-
-
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-           // Gui.IconRemover.RemoveIcon(this);
+            this.IpTextBox.Text = currentPrefferences.IndexIp;
         }
 
         private void CancelButton_OnClick(object sender, RoutedEventArgs e)
@@ -73,6 +70,17 @@ namespace CifsPreferences
         private void OnDriverCharChanged(char ch)
         {
             CurrentPrefferences = CurrentPrefferences.WithDriverChar(ch);
+        }
+
+        private void IpTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            CurrentPrefferences = CurrentPrefferences.WithIp(IpTextBox.Text);
+        }
+
+        private bool IsValidIp(string str)
+        {
+            IPAddress ip;
+            return IPAddress.TryParse(str, out ip);
         }
     }
 }

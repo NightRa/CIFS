@@ -1,5 +1,6 @@
 ﻿using Utils.Binary;
 using Utils.GeneralUtils;
+using Utils.IEnumerableUtil;
 using Utils.Parsing;
 
 namespace Communication.DokanMessaging.ReadFile
@@ -38,6 +39,11 @@ namespace Communication.DokanMessaging.ReadFile
                                                     .Map(byteArray =>
                                                         new ReadFileResponse(true, byteArray));
                                     })));
+        }
+
+        public override string ToString()
+        {
+            return $"DoesFileExist: {DoesFileExist}, BytesRead: " + BytesRead.MkString(",");
         }
     }
 }

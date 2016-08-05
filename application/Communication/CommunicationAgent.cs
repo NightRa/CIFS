@@ -8,8 +8,7 @@ namespace Communication
 {
     public sealed class CommunicationAgent
     {
-        private static TimeSpan SendMessageTimeout => TimeSpan.FromSeconds(3);
-        private static TimeSpan RecieveMessageTimeout => TimeSpan.FromSeconds(4);
+        private static TimeSpan MessagingTimeout => TimeSpan.FromSeconds(10);
         public Comunicator Comunicator { get; }
         public Action<string> Log { get; }
         public CommunicationAgent(string ip, int port, Action<string> log)
@@ -27,7 +26,7 @@ namespace Communication
             Log("Writing request");
             lock (ProtectCode)
             {
-                var respond = Comunicator.SendAndRecieveMessage(request.ToBytes(), SendMessageTimeout);
+                var respond = Comunicator.SendAndRecieveMessage(request.ToBytes(), MessagingTimeout);
                 var responseFailure = respond as MessagingResult.Failure;
                 var responseSuccess = respond as MessagingResult.Success;
                 if (responseFailure != null)

@@ -30,9 +30,7 @@ namespace OverlayIcon
 
         private Preferences GetCifsPreferences()
         {
-            Action<string> log = _ => { };
-            var init = new InitilizationData(new Mail<AdministratorMessage>(log), log);
-            return init.GetPreferences();
+            return InitilizationData.GetPreferencesUnsafe();
         }
 
         protected override Icon GetOverlayIcon() => Properties.Resources.FollowIcon;

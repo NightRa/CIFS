@@ -184,6 +184,7 @@ namespace Dokan
 
         public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, DokanFileInfo info)
         {
+            Log("Get file information " + fileName);
             var maybeStat = Communicator.GetResponse(new StatRequest(fileName), StatResponse.Parse);
             fileInfo = new FileInformation();
             if (maybeStat.IsError)

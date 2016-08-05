@@ -78,7 +78,7 @@ namespace CifsStartupApp
         {
             var path = init.GetPreferences().DriverChar + ":\\";
             Action openExplorer = () => Process.Start(path);
-            openExplorer.DoAsyncBackground("CifsExplorerProcessOpener", log);
+            openExplorer.DoAsyncBackground("uBoxExplorerProcessOpener", log);
         }
 
         public static void EditPreferences()

@@ -27,5 +27,10 @@ namespace Communication.DokanMessaging.RootHash
                                     .GetString(index)
                                     .Map(b => new RootHashResponse(b))));
         }
+
+        public override string ToString()
+        {
+            return $"RootHash: {RootHash}";
+        }
     }
 }

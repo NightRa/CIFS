@@ -5,6 +5,7 @@ using System.Reflection;
 using Agents;
 using Agents.AdministratorMessages;
 using CifsPreferences;
+using Constants;
 using FileSystem.Entries;
 using Utils.FileSystemUtil;
 using Utils.FunctionUtil;
@@ -74,6 +75,7 @@ namespace CifsStartupApp
         {
             lock (CifsPreferencesDataPath)
             {
+                CifsDirectoryPath.CreateDirectoryIfDoesntExist(FileAttributes.Hidden, Log);
                 if (!CifsPreferencesDataPath.DoesFileExists(Log))
                     CifsPreferencesDataPath.CreateFile(Preferences.Default().ToBytes(), Log);
                 var maybePreferences = Preferences.Parse(CifsPreferencesDataPath.ReadAllBytes(), new Box<int>(0));
@@ -88,6 +90,13 @@ namespace CifsStartupApp
                 }
                 return preferences;
             }
+        }
+
+        private static readonly InitilizationData dummy =
+            new InitilizationData(new Mail<AdministratorMessage>(_ => { }), _ => { });
+        public static Preferences GetPreferencesUnsafe()
+        {
+            return dummy.GetPreferences();
         }
 
         public void ApplyPreferencesInitially(Preferences preferences)

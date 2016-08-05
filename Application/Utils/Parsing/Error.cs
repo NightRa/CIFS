@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Utils.Parsing
 {
@@ -30,12 +28,14 @@ namespace Utils.Parsing
 
         public override string ToString()
         {
-            return ErrorUnsafe;
+            return "Error" + ErrorUnsafe;
         }
         
         public override ParsingResult<TOther> Convert<TOther>()
         {
             return new Error<TOther>(ErrorUnsafe);
         }
+
+
     }
 }

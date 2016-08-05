@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Communication;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utils.Binary;
 using Utils.GeneralUtils;

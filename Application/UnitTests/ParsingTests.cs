@@ -96,7 +96,7 @@ namespace UnitTests
         [TestMethod]
         public void TestParsePreferences()
         {
-            var p = new Preferences(true, 'G');
+            var p = new Preferences(true, 'G', "123.4.5.6");
             var bytes = p.ToBytes();
             var maybeP = Preferences.Parse(bytes, new Box<int>(0));
             Assert.IsTrue(maybeP.IsResult);

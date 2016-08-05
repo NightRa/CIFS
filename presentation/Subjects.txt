@@ -19,3 +19,14 @@
 
 -- style - at last
 http://www.smiletemplates.com/powerpoint-templates/connection-between-computers/04986/
+
+
+- Ilan:
+	- Prefix substitution
+	- IPFS: peer to peer, sigs
+	- future
+- Yuval:
+	- usages
+	- Screen shots
+	- future work
+

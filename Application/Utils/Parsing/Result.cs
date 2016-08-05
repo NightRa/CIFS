@@ -34,7 +34,7 @@ namespace Utils.Parsing
 
         public override string ToString()
         {
-            return ResultUnsafe.ToString();
+            return "Result: " + ResultUnsafe.ToString();
         }
     }
 }

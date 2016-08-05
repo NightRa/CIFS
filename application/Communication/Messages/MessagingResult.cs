@@ -1,4 +1,6 @@
-﻿namespace Communication.Messages
+﻿using Utils.IEnumerableUtil;
+
+namespace Communication.Messages
 {
     public abstract class MessagingResult
     {
@@ -10,6 +12,11 @@
             {
                 FailureMessage = failureMessage;
             }
+
+            public override string ToString()
+            {
+                return "Failure: " + FailureMessage;
+            }
         }
 
         public sealed class Success : MessagingResult
@@ -18,6 +25,11 @@
             public Success(byte[] data)
             {
                 Data = data;
+            }
+
+            public override string ToString()
+            {
+                return $"Success: " + Data.MkString(",");
             }
         }
     }

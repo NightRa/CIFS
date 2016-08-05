@@ -17,5 +17,10 @@ namespace Communication.DokanMessaging.Flush
                     .Map(num => num.HasToBe(TypeNum))
                     .Map(_ => new FlushResponse());
         }
+
+        public override string ToString()
+        {
+            return $"Flush response";
+        }
     }
 }

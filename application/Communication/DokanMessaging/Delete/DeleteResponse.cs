@@ -34,5 +34,10 @@ namespace Communication.DokanMessaging.Delete
                                         return new DeleteResponse(isReadOnly, pathDoesntExist);
                                     })));
         }
+
+        public override string ToString()
+        {
+            return $"IsReadOnly: {IsReadOnly}, PathDoesntExist: {PathDoesntExist}";
+        }
     }
 }

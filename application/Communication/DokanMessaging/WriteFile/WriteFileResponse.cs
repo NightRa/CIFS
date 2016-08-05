@@ -35,5 +35,10 @@ namespace Communication.DokanMessaging.WriteFile
                                         return new WriteFileResponse(isWriteSuccess, isReadOnly, doesntExist);
                                     })));
         }
+
+        public override string ToString()
+        {
+            return $"IsWriteSuccess: {IsWriteSuccess}, IsFileReadonly: {IsFileReadonly}, FileDoesntExist: {FileDoesntExist}";
+        }
     }
 }

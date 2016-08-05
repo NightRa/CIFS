@@ -1,6 +1,7 @@
 ﻿using FileSystem.Entries;
 using Utils.Binary;
 using Utils.GeneralUtils;
+using Utils.IEnumerableUtil;
 using Utils.Parsing;
 
 namespace Communication.DokanMessaging.GetInnerEntries
@@ -37,6 +38,11 @@ namespace Communication.DokanMessaging.GetInnerEntries
                                             .GetArray(index, Entry.Info.Parse)
                                             .Map(infos => new GetInnerEntriesResponse(infos, true));
                                 })));
+        }
+
+        public override string ToString()
+        {
+            return $"Infos: " + Infos.MkString(",") + ", DoesFolderExist: {DoesFolderExist}";
         }
     }
 }

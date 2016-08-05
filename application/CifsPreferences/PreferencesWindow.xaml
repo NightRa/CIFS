@@ -7,10 +7,11 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         FontSize="12"
-        Title=" Preferences" Height="135" Width="275">
+        Title=" Preferences" Height="180" Width="275">
     <Grid>
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="4*"></RowDefinition>
                 <RowDefinition Height="4*"></RowDefinition>
                 <RowDefinition Height="4*"></RowDefinition>
                 <RowDefinition Height="5*"></RowDefinition>
@@ -27,7 +28,11 @@
 
 
 
-            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <DockPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="12.5,6,6,6" Text="Choose index IP source: "/>
+                <TextBox DockPanel.Dock="Right" VerticalAlignment="Center" Margin="7, 0, 6, 0" Name="IpTextBox" TextChanged="IpTextBox_TextChanged"/>
+            </DockPanel>
+            <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Margin="6,6,0,6" Padding="12,5,12,5" Name="CancelButton" Content="Cancel" Click="CancelButton_OnClick"/>
                 <Button Margin="8,6,8,6" Padding="12,5,12,5" Name="ApplyButton" Content="Apply" Click="ApplyButton_OnClick"/>
             </StackPanel>

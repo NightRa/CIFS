@@ -20,7 +20,7 @@ namespace CifsStartupApp
         public static void Loop(Index index, Preferences preferences, Mail<AdministratorMessage> @inbox, Action<string> log)
         {
             var dokanMail = new Mail<DokanSupervisorMessage>(log);
-            RunDokan.MountDokan(index, preferences.DriverChar, DokanOptions.DebugMode, 5, inbox.Publish, dokanMail, log);
+            RunDokan.MountDokan(index, preferences.DriverChar, DokanOptions.FixedDrive, 5, inbox.Publish, dokanMail, log);
             while (true)
             {
                 var maybeMessage = inbox.TryGetMessage();
@@ -49,7 +49,7 @@ namespace CifsStartupApp
 
         private static void ProcessMessage(this InternalErrorMessage @this, Action<string> log)
         {
-            var message = "An internal error occurred. closing CIFS :(";
+            var message = "An internal error occurred. closing uBox :(";
             message += NewLine;
             message += @this.Exception.Message;
             log(message);

@@ -78,5 +78,10 @@ namespace Communication.DokanMessaging.Stat
             return Global.RegularFile(log).GetAccessControl();
 
         }
+
+        public override string ToString()
+        {
+            return $"EntryExists: {EntryExists}, IsFolder: {IsFolder}, FileLength: {FileLength}, IsFile: {IsFile}, IsReadOnly: {IsReadOnly}";
+        }
     }
 }
