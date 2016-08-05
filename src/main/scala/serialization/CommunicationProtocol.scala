@@ -63,6 +63,7 @@ object CommunicationProtocol {
     .typecase(1, provide(Response.CreateFileFolderIsReadOnly))
     .typecase(2, provide(Response.CreateFileNameCollision))
     .typecase(3, provide(Response.CreateFileParentDoesntExist))
+    .typecase(4, provide(Response.CreateFileInvalidName))
 
   // 7 - mkdir
   val mkdirRequest: Codec[Requests.Mkdir] = "Mkdir Request" | path.as[Requests.Mkdir]
@@ -71,6 +72,7 @@ object CommunicationProtocol {
     .typecase(1, provide(Response.MkdirFolderReadOnly))
     .typecase(2, provide(Response.MkdirNameCollision))
     .typecase(3, provide(Response.MkdirParentDoesntExist))
+    .typecase(4, provide(Response.MkdirInvalidName))
 
   // 8 - rm
   val rmRequest: Codec[Requests.Rm] = "Rm Request" | path.as[Requests.Rm]

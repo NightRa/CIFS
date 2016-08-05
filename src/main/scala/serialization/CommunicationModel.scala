@@ -67,12 +67,14 @@ object Response {
   case object CreateFileFolderIsReadOnly extends CreateFile
   case object CreateFileNameCollision extends CreateFile
   case object CreateFileParentDoesntExist extends CreateFile
+  case object CreateFileInvalidName extends CreateFile
 
   sealed trait Mkdir extends Response
   case object MkdirOK extends Mkdir
   case object MkdirFolderReadOnly extends Mkdir
   case object MkdirNameCollision extends Mkdir
   case object MkdirParentDoesntExist extends Mkdir
+  case object MkdirInvalidName extends Mkdir
 
   sealed trait Rm extends Response
   case object RmOK extends Rm

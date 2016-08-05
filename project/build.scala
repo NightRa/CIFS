@@ -17,13 +17,22 @@ object build extends Build {
       "org.scalaz" %% "scalaz-concurrent" % "7.2.4",
       "com.github.julien-truffaut" %% "monocle-core" % monocleVersion,
       "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion,
-      "co.fs2" %% "fs2-core" % "0.9.0-M6",
-      "co.fs2" %% "fs2-io" % "0.9.0-M6",
+      /*"co.fs2" %% "fs2-core" % "0.9.0-M6",
+      "co.fs2" %% "fs2-io" % "0.9.0-M6",*/
+      // "org.scalaz.stream" %% "scalaz-stream" % "0.8",
       "org.scodec" %% "scodec-core" % "1.10.2",
-      "org.scodec" %% "scodec-scalaz" % "1.3.0a",
-      "org.scodec" %% "scodec-stream" % "1.0.0-M6",
+      // "org.scodec" %% "scodec-scalaz" % "1.3.0a",
+      // "org.scodec" %% "scodec-stream" % "1.0.0-M6",
       "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-      "org.apache.httpcomponents.client5" % "httpclient5-fluent" % "5.0-alpha1"
+      "org.apache.httpcomponents.client5" % "httpclient5" % "5.0-alpha1",
+      "org.apache.httpcomponents.client5" % "httpclient5-fluent" % "5.0-alpha1",
+      /*"org.http4s" %% "http4s-core" % "0.14.1a",
+      "org.http4s" %% "http4s-client" % "0.14.1a",
+      "org.http4s" %% "http4s-blaze-client" % "0.14.1a",
+      "org.http4s" %% "http4s-argonaut62" % "0.14.1a",*/
+      "io.circe" %% "circe-core" % "0.4.1",
+      "io.circe" %% "circe-generic" % "0.4.1",
+      "io.circe" %% "circe-parser" % "0.4.1"
       // "io.ipfs" % "scala-ipfs-api_2.10" % "1.0.0-SNAPSHOT"
       // "com.googlecode.concurrent-trees" % "concurrent-trees" % "2.5.0",
       // "com.github.dokan-dev.dokan-java" % "dokan-java" % "0.1-SNAPSHOT",
@@ -45,10 +54,10 @@ object build extends Build {
     .settings(scalaVersion := "2.11.8")
     .settings(libraryDependencies := junit)
 
-  /*lazy val IPFS = project.in(file("java-ipfs-api"))
+  lazy val java_ipfs_api = project.in(file("java-ipfs-api"))
     .settings(name := "java-ipfs-api")
     .settings(scalaVersion := "2.11.8")
-    .settings(libraryDependencies := junit)*/
+    .settings(libraryDependencies := junit)
 
   /*lazy val Scala_IPFS = project.in(file("scala-ipfs-api"))
 
@@ -63,8 +72,8 @@ object build extends Build {
       id = "CIFS",
       base = file("."),
       settings = CIFSSettings,
-      aggregate = Seq(concurrentTrees, scala_ipfs_api)
-    ).dependsOn(concurrentTrees, scala_ipfs_api)
+      aggregate = Seq(concurrentTrees, scala_ipfs_api, java_ipfs_api)
+    ).dependsOn(concurrentTrees, scala_ipfs_api, java_ipfs_api)
 
   lazy val scala_ipfs_api =
     ProjectRef(file("scala-ipfs-api"), "scala-ipfs-api")

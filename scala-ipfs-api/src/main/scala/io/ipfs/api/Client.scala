@@ -320,7 +320,7 @@ class Client(val host : String,
    */
   def commands: JsonNode = getRequestAsJson("/commands", Seq())
 
-
+  private def buildUrlSafe(stem: String, query: Seq[(String, String)]): Option[URL] = Client.buildUrlSafe(protocol, host, port, base, stem, query)
   private def buildUrl(stem: String, query: Seq[(String, String)]): URL = Client.buildUrl(protocol, host, port, base, stem, query)
 
   private def getRequestInputStream(stem: String, query: Seq[(String, String)]) = {
@@ -340,7 +340,7 @@ class Client(val host : String,
       .asScala
   }
 
-  private def getRequestSource(stem: String, query: Seq[(String, String)]) = {
+  def getRequestSource(stem: String, query: Seq[(String, String)]) = {
     val url = buildUrl(stem, query)
     // TODO: Undo this
     println(s"Querying URL: $url")
@@ -349,8 +349,7 @@ class Client(val host : String,
 
   private def getRequestAsJson(stem: String, query: Seq[(String, String)]): JsonNode = jsonMapper.readTree(getRequestSource(stem, query).reader())
 
-  private def upload(stem: String, namedInputStreams: Array[(String, InputStream)]): BufferedSource = {
-    val url = buildUrl(stem, Array("stream-channels" -> "true"))
+  def uploadUrl(url: URL, namedInputStreams: Array[(String, InputStream)]): HttpURLConnection = {
     val boundary = genBoundary()
     val conn = url.openConnection().asInstanceOf[HttpURLConnection]
     conn.setDoOutput(true)
@@ -392,6 +391,16 @@ class Client(val host : String,
     writer.flush()
     writer.close()
 
+    conn
+  }
+
+  def upload2(stem: String, namedInputStreams: Array[(String, InputStream)]): HttpURLConnection = {
+    val url = buildUrl(stem, Array("stream-channels" -> "true"))
+    uploadUrl(url, namedInputStreams)
+  }
+
+  def upload(stem: String, namedInputStreams: Array[(String, InputStream)]): BufferedSource = {
+    val conn = upload2(stem, namedInputStreams)
     Source.fromInputStream(conn.getInputStream)
   }
 
@@ -509,6 +518,19 @@ object Client {
     case _ => Array()
   }
 
+  private def buildUrlSafe(protocol: String,
+                       host: String,
+                       port: Int,
+                       base: String,
+                       stem: String,
+                       query: Seq[(String, String)]): Option[URL] = {
+    if(query.exists{case (k,v) => k.contains("&|=|\\?") || v.contains("&|=|\\?")}) return None
+
+    val queryStem = if(query.nonEmpty) "?" + query.map(e => urlEncode(e._1) + "=" + urlEncode(e._2)).mkString("&") else ""
+    val path = base + stem + queryStem
+    Some(new URL(protocol, host, port, path))
+  }
+
   private def buildUrl(protocol: String,
                host: String,
                port: Int,
@@ -516,7 +538,7 @@ object Client {
                stem: String,
                query: Seq[(String, String)]) = {
 
-    val queryStem = "?" + query.map(e => urlEncode(e._1) + "=" + urlEncode(e._2)).mkString("&")
+    val queryStem = if(query.nonEmpty) "?" + query.map(e => urlEncode(e._1) + "=" + urlEncode(e._2)).mkString("&") else ""
     val path = base + stem + queryStem
     new URL(protocol, host, port, path)
   }
