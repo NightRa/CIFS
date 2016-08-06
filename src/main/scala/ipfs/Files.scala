@@ -2,7 +2,7 @@ package ipfs
 
 
 import java.io.ByteArrayOutputStream
-import java.net.URI
+import java.net.{URI, URLEncoder}
 
 import cats.data.Xor._
 import io.circe.generic.auto._
@@ -16,7 +16,7 @@ import scodec.bits.ByteVector
 import serialization.Response
 import serialization.Response.FType
 
-object Files extends App {
+object Files {
 
   case class IPFSStat(Blocks: Int, CumulativeSize: Long, Hash: String, Size: Long, Type: String) {
     def ftype: FType = Type match {
@@ -25,7 +25,13 @@ object Files extends App {
       case _ => sys.error(s"stat(???); Invalid file type: $Type")
     }
   }
-  case class Entry(Name: String, Type: Int, Size: Long, Hash: String)
+  case class Entry(Name: String, Type: Int, Size: Long, Hash: String) {
+    def ftype: FType = Type match {
+      case 0 => Response.File
+      case 1 => Response.Folder
+      case _ => sys.error(s"ls(???); Invalid file type: $Type")
+    }
+  }
   case class IPFSLs(Entries: Vector[Entry])
 
   def rootKey(): Response.RootKeyOK = {
@@ -39,12 +45,14 @@ object Files extends App {
 
   def badPath(path: String): Boolean = path.contains("&|=|\\?") // TODO: This is not a proper security check. Need to do this sanitization properly. (Injection prone)
 
+  def urlEncode(s: String): String = URLEncoder.encode(s, "UTF-8")
+
   def stat(path: String): Option[IPFSStat] = {
     if (badPath(path)) {
       println(s"stat($path): Bad path")
       None
     } else
-      exec(s"stat($path)", Request.Get(new URI(s"http://localhost:5001/api/v0/files/stat?arg=$path"))).decode[IPFSStat]
+      exec(s"stat($path)", Request.Get(new URI(s"http://localhost:5001/api/v0/files/stat?arg=${urlEncode(path)}"))).decode[IPFSStat]
   }
 
   def ls(path: String): Option[IPFSLs] = {
@@ -52,7 +60,7 @@ object Files extends App {
       println(s"ls($path): Bad path")
       None
     } else {
-      val res = exec(s"ls($path)", Request.Get(new URI(s"http://localhost:5001/api/v0/files/ls?arg=$path&l=true")))
+      val res = exec(s"ls($path)", Request.Get(new URI(s"http://localhost:5001/api/v0/files/ls?arg=${urlEncode(path)}&l=true")))
       res.json.flatMap(json => json.hcursor.downField("Entries").focus.fold(sys.error(s"ls($path): no Entries filed, json: $json")) { j =>
         if (j.isNull)
           Some(IPFSLs(Vector.empty))
@@ -62,7 +70,7 @@ object Files extends App {
     }
   }
 
-  def read(path: String, offset: Long, count: Option[Int]): Option[ByteVector] = {
+  def read(path: String, offset: Long, count: Option[Long]): Option[ByteVector] = {
     // TODO: Report bug in IPFS; if offset = length, should be empty, not the whole message.
     stat(path).flatMap { stat =>
       if (offset == stat.Size) Some(ByteVector.empty)
@@ -72,7 +80,7 @@ object Files extends App {
           println(s"read($path,offset=$offset,count=$count): Bad path")
           None
         } else {
-          val res = exec(s"read($path,offset=$offset,count=$count)", Request.Get(new URI(s"http://localhost:5001/api/v0/files/read?arg=$path&offset=$offset${count.fold("")(c => s"&count=$c")}")))
+          val res = exec(s"read($path,offset=$offset,count=$count)", Request.Get(new URI(s"http://localhost:5001/api/v0/files/read?arg=${urlEncode(path)}&offset=$offset${count.fold("")(c => s"&count=$c")}")))
           res.bytes
         }
       }
@@ -80,13 +88,13 @@ object Files extends App {
 
   }
 
-  def write(path: String, data: ByteVector, offset: Long, create: Boolean, truncate: Boolean, count: Int, flush: Boolean): Option[Unit] = {
+  def write(path: String, data: ByteVector, offset: Long, create: Boolean, truncate: Boolean, count: Long, flush: Boolean): Option[Unit] = {
     if (badPath(path)) {
       println(s"write($path,$data,offset=$offset,create=$create,truncate=$truncate,count=$count,flush=$flush): Bad path")
       None
     } else {
       val res = exec(s"write($path,$data,offset=$offset,create=$create,truncate=$truncate,count=$count,flush=$flush)",
-        Request.Post(new URI(s"http://localhost:5001/api/v0/files/write?arg=$path&offset=$offset&create=$create&truncate=$truncate&count=$count"))
+        Request.Post(new URI(s"http://localhost:5001/api/v0/files/write?arg=${urlEncode(path)}&offset=$offset&create=$create&truncate=$truncate&count=$count"))
           .body(MultipartEntityBuilder.create()
             .addBinaryBody("data", data.toArray)
             .build())
@@ -101,7 +109,7 @@ object Files extends App {
       None
     } else {
       val res = exec(s"mkdir($path,makeParents=$makeParents,flush=$flush)",
-        Request.Post(new URI(s"http://localhost:5001/api/v0/files/mkdir?arg=$path&parents=$makeParents&flush=$flush")))
+        Request.Post(new URI(s"http://localhost:5001/api/v0/files/mkdir?arg=${urlEncode(path)}&parents=$makeParents&flush=$flush")))
       res.string.map(_ => ())
     }
   }
@@ -112,7 +120,7 @@ object Files extends App {
       None
     } else {
       val res = exec(s"rm($path,recursive=$recursive,flush=$flush)",
-        Request.Post(new URI(s"http://localhost:5001/api/v0/files/rm?arg=$path&recursive=$recursive&flush=$flush")))
+        Request.Post(new URI(s"http://localhost:5001/api/v0/files/rm?arg=${urlEncode(path)}&recursive=$recursive&flush=$flush")))
       res.string.map(_ => ())
     }
   }
@@ -125,7 +133,7 @@ object Files extends App {
         None
       } else {
         val res = exec(s"mv($src,$dest,flush=$flush)",
-          Request.Post(new URI(s"http://localhost:5001/api/v0/files/mv?arg=$src&arg=$dest&flush=$flush")))
+          Request.Post(new URI(s"http://localhost:5001/api/v0/files/mv?arg=${urlEncode(src)}&arg=${urlEncode(dest)}&flush=$flush")))
         res.string.map(_ => ())
       }
     }

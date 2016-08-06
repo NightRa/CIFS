@@ -3,13 +3,14 @@ import java.nio.ByteBuffer
 import java.nio.channels.{ServerSocketChannel, SocketChannel}
 
 import io.ipfs.api.Client
+import ipfs.Files
 import scodec.Attempt.{Failure, Successful}
 import scodec.bits.{BitVector, _}
 import scodec.{Attempt, DecodeResult}
 import serialization.{CommunicationProtocol, Requests, Response}
 
 object ServerDemo extends App {
-  val client = new Client("localhost")
+  // val client = new Client("localhost")
 
   val all = InetAddress.getByName("0.0.0.0")
   val port = 8008
@@ -21,39 +22,42 @@ object ServerDemo extends App {
     val socket: SocketChannel = server.accept()
     socket.configureBlocking(true)
 
-    println("Got connection")
+    // println("Got connection")
 
     val input: BitVector = BitVector.fromChannel(socket, 1024 * 4, direct = true)
 
-    val startTime = System.currentTimeMillis()
+    // val startTime = System.currentTimeMillis()
 
-    println(s"Start time: ${System.currentTimeMillis() - startTime}")
+    // println(s"Start time: ${System.currentTimeMillis() - startTime}")
 
     val req: Attempt[DecodeResult[Requests.Request]] = CommunicationProtocol.request.decode(input)
 
-    println(s"Decoded time: ${System.currentTimeMillis() - startTime}")
+    // println(s"Decoded time: ${System.currentTimeMillis() - startTime}")
 
     req match {
       case Failure(err) => println(err)
       case Successful(DecodeResult(value, rest)) =>
-        println(value)
-        val response = handleRequest(value, client)
-        println(s"Handled request: ${System.currentTimeMillis() - startTime}")
+        println("Request: " + value)
+        val response = handleRequest(value)
+        println("Response: " + response)
+        // println(s"Handled request: ${System.currentTimeMillis() - startTime}")
+
+
 
         val encoded: Attempt[BitVector] = CommunicationProtocol.response.encode(response)
 
-        println(s"Encoded response: ${System.currentTimeMillis() - startTime}")
+        // println(s"Encoded response: ${System.currentTimeMillis() - startTime}")
 
         encoded match {
           case Failure(err) => println(s"Encoding error: $err")
           case Successful(bitsToSend) =>
             val chunkSize = 1024 * 1000 * 16
             val buf: ByteBuffer = bitsToSend.toByteBuffer
-            println(s"Converted to byte buffer: ${System.currentTimeMillis() - startTime}")
+            // println(s"Converted to byte buffer: ${System.currentTimeMillis() - startTime}")
 
             while (buf.remaining() > 0) {
               socket.write(buf)
-              println(s"Wrote response: ${System.currentTimeMillis() - startTime}")
+              // println(s"Wrote response: ${System.currentTimeMillis() - startTime}")
             }
             socket.shutdownOutput()
         }
@@ -61,28 +65,31 @@ object ServerDemo extends App {
 
     socket.shutdownOutput()
 
-    println("Finished getting data")
+    // println("Finished getting data")
 
     socket.close()
 
-    println("Closed connection")
+    // println("Closed connection")
   }
 
   server.close()
 
   println("Closed server")
 
-  def handleRequest(request: Requests.Request, client: Client): Response.Response = request match {
-    case Requests.RootKey => Response.RootKeyOK(client.id.ID)
-    case Requests.Flush => Response.FlushOK
-    case Requests.Stat(path) => Response.StatOK(Response.File, Response.ReadWrite, 20)
-    case Requests.Rm(path) => Response.RmReadOnly
-    case Requests.Mkdir(path) => Response.MkdirParentDoesntExist
-    case Requests.CreateFile(path) => Response.CreateFileParentDoesntExist
-    case Requests.Ls(path) => Response.LsOK(Vector(Response.FEntry(Response.File, Response.ReadOnly, 666L, "אאאaaa")))
-    case Requests.Mv(src, dest) => Response.MvReadOnly
-    case Requests.Read(path, offset, count) => Response.ReadOK(ByteVector(1, 7, 9))
-    case Requests.Write(path, offset, buf) => Response.WriteOK
+  def handleRequest(request: Requests.Request): Response.Response = request match {
+    case Requests.RootKey => Response.RootKeyOK(Files.rootKey().rootKey)
+    case Requests.Flush => Files.flush(); Response.FlushOK
+    case Requests.Stat(path) =>
+      if (path == "/") Response.StatOK(Response.Folder, Response.ReadWrite, 0) // TODO: Probably remote this. (The frontend sends alot of these)
+      else Files.stat(path).fold[Response.Stat](Response.StatNoSuchFile)(stat => Response.StatOK(stat.ftype, Response.ReadWrite, stat.Size))
+    case Requests.Ls(path) => Files.ls(path).fold[Response.Ls](Response.LsNoSuchFolder)(ls => Response.LsOK(ls.Entries.map(e => Response.FEntry(e.ftype, Response.ReadWrite, e.Size, e.Name))))
+    case Requests.CreateFile(path) => Files.write(path, ByteVector.empty, 0, create = true, truncate = false, count = 0, flush = true).fold[Response.CreateFile](Response.CreateFileNameCollision)(_ => Response.CreateFileOK)
+    case Requests.Mkdir(path) => Files.mkdir(path, makeParents = false, flush = true).fold[Response.Mkdir](Response.MkdirNameCollision)(_ => Response.MkdirOK)
+    case Requests.Rm(path) => Files.rm(path, recursive = true, flush = true).fold[Response.Rm](Response.RmPathDoesntExist)(_ => Response.RmOK)
+    case Requests.Mv(src, dest) => Files.mv(src, dest, flush = true).fold[Response.Mv](Response.MvSrcDoesntExist)(_ => Response.MvOK)
+    case Requests.Read(path, offset, count) => Files.read(path, offset, Some(count)).fold[Response.Read](Response.ReadNoSuchFile)(bytes => Response.ReadOK(bytes))
+    case Requests.Write(path, offset, buf) => Files.write(path, buf, offset, create = false, truncate = false, buf.length, flush = true).fold[Response.Write](Response.WriteFileDoesntExist)(_ => Response.WriteOK)
+
     case Requests.CloneFollow(Requests.Clone, localPath, remotePath) => Response.CloneFollowMalformedPath
     case Requests.CloneFollow(Requests.Follow, localPath, remotePath) => Response.CloneFollowNameCollision
   }
