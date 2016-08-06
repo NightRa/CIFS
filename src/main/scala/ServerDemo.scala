@@ -8,9 +8,9 @@ import scodec.Attempt.{Failure, Successful}
 import scodec.bits.{BitVector, _}
 import scodec.{Attempt, DecodeResult}
 import serialization.{CommunicationProtocol, Requests, Response}
+import server.Republisher.republisher
 
 object ServerDemo extends App {
-  // val client = new Client("localhost")
 
   val all = InetAddress.getByName("0.0.0.0")
   val port = 8008
@@ -41,7 +41,6 @@ object ServerDemo extends App {
         val response = handleRequest(value)
         println("Response: " + response)
         // println(s"Handled request: ${System.currentTimeMillis() - startTime}")
-
 
 
         val encoded: Attempt[BitVector] = CommunicationProtocol.response.encode(response)
@@ -75,10 +74,12 @@ object ServerDemo extends App {
   server.close()
 
   println("Closed server")
-
   def handleRequest(request: Requests.Request): Response.Response = request match {
     case Requests.RootKey => Response.RootKeyOK(Files.rootKey().rootKey)
-    case Requests.Flush => Files.flush(); Response.FlushOK
+    case Requests.Flush =>
+      Files.flush()
+      republisher ! true
+      Response.FlushOK
     case Requests.Stat(path) =>
       if (path == "/") Response.StatOK(Response.Folder, Response.ReadWrite, 0) // TODO: Probably remote this. (The frontend sends alot of these)
       else Files.stat(path).fold[Response.Stat](Response.StatNoSuchFile)(stat => Response.StatOK(stat.ftype, Response.ReadWrite, stat.Size))

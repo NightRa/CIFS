@@ -177,6 +177,7 @@ class Client(val host : String,
    * @param key The name to resolve
    * @return
    */
+  def resolveSelf(): Resolve = getRequestAsType("/name/resolve", classOf[Resolve])
   def resolve(key: String): Resolve = getRequestAsType("/name/resolve", classOf[Resolve], Array("arg" -> key))
 
   /**
