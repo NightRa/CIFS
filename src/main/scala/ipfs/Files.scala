@@ -104,7 +104,7 @@ object Files {
   }
 
   def mkdir(path: String, makeParents: Boolean, flush: Boolean): Option[Unit] = {
-    if(badPath(path)) {
+    if (badPath(path)) {
       println(s"mkdir($path,makeParents=$makeParents,flush=$flush)")
       None
     } else {
@@ -115,7 +115,7 @@ object Files {
   }
 
   def rm(path: String, recursive: Boolean, flush: Boolean): Option[Unit] = {
-    if(badPath(path)) {
+    if (badPath(path)) {
       println(s"rm($path,recursive=$recursive,flush=$flush)")
       None
     } else {
@@ -125,10 +125,10 @@ object Files {
     }
   }
 
-  def mv(src: String, dest: String, flush: Boolean):  Option[Unit] = {
-    if(src == dest) Some(()) // TODO: Report bug to IPFS, if src == dest, it removes the file.
+  def mv(src: String, dest: String, flush: Boolean): Option[Unit] = {
+    if (src == dest) Some(()) // TODO: Report bug to IPFS, if src == dest, it removes the file.
     else {
-      if(badPath(src) || badPath(dest)) {
+      if (badPath(src) || badPath(dest)) {
         println(s"mv($src,$dest,flush=$flush)")
         None
       } else {
@@ -162,7 +162,7 @@ object Files {
 
   // HTTP & fast and loose error handling TODO: Proper error handling. See IPFS-API.txt for deep analysis.
 
-  case class HTTPResponse(statusCode: Int, resp: HttpEntity, description: String) {
+  case class HTTPResponse(statusCode: Int, resp: HttpEntity, description: String, debug: Boolean) {
     def data: Option[ByteArrayOutputStream] = {
       val out = new ByteArrayOutputStream
       resp.writeTo(out)
@@ -171,7 +171,7 @@ object Files {
         sys.error(s"Status code 400, Bad request: on $description, data: ${out.toString}")
       }
       else if (statusCode == 500) {
-        println(s"Status code 500 on $description, data: ${out.toString}")
+        if (debug) println(s"Status code 500 on $description, data: ${out.toString}")
         None
       } else if (statusCode == 200) {
         Some(out)
@@ -191,7 +191,7 @@ object Files {
     def json: Option[Json] = {
       string.flatMap(s => parse(s) match {
         case Left(err) =>
-          println(s"Json parsing error on $description: input = $s, error: $err")
+          if (debug) println(s"Json parsing error on $description: input = $s, error: $err")
           None
         case Right(json) => Some(json)
       })
@@ -200,7 +200,7 @@ object Files {
     def decode[A](implicit decoder: Decoder[A]): Option[A] = {
       string.flatMap(s => io.circe.parser.decode[A](s) match {
         case Left(err) =>
-          println(s"Json Decoding error on $description, input: $s, error: $err")
+          if (debug) println(s"Json Decoding error on $description, input: $s, error: $err")
           None
         case Right(res) =>
           Some(res)
@@ -209,10 +209,10 @@ object Files {
 
   }
 
-  def exec(description: String, request: Request): HTTPResponse = {
+  def exec(description: String, request: Request, debug: Boolean = true): HTTPResponse = {
     val resp = request.execute().returnResponse()
     val statusCode = resp.getCode
-    HTTPResponse(statusCode, resp.getEntity, description)
+    HTTPResponse(statusCode, resp.getEntity, description, debug)
   }
 
 
