@@ -18,15 +18,17 @@ object FollowSerializationSpecification extends Properties("FollowSerialization"
   implicit val path: Arbitrary[List[String]] =
     Arbitrary(Gen.nonEmptyListOf(segment.arbitrary))
 
-  implicit val arbRemotePath = Arbitrary(for {
+  implicit val arbRemotePath: Arbitrary[RemotePath] = Arbitrary(for {
     root <- arbitrary[String]
     path <- path.arbitrary
   } yield RemotePath(root, path))
 
-  implicit val arbFollow = Arbitrary(for {
+  implicit val arbFollow: Arbitrary[Follow] = Arbitrary(for {
     localPath <- path.arbitrary
     remotePath <- arbitrary[RemotePath]
   } yield Follow(localPath, remotePath))
+
+  implicit val arbFollows: Arbitrary[Follows] = Arbitrary(resize(10, Gen.listOf(arbFollow.arbitrary).map(Follows)))
 
   property("serialize-deserialize RemotePath") = forAll { (remote: RemotePath) =>
     deserializeRemotePath(serializeRemotePath(remote)) == Some(remote)
@@ -36,4 +38,7 @@ object FollowSerializationSpecification extends Properties("FollowSerialization"
     deserializeFollow(serializeFollow(follow)) == Some(follow)
   }
 
+  property("serialize-deserialize Follows") = forAll { (follows: Follows) =>
+    deserializeFollows(serializeFollows(follows)) == Some(follows)
+  }
 }
