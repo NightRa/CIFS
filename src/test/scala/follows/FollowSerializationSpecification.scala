@@ -32,7 +32,7 @@ object FollowSerializationSpecification extends Properties("FollowSerialization"
   implicit val arbFollow: Arbitrary[Follow] = Arbitrary(for {
     localPath <- path.arbitrary
     remotePath <- arbitrary[RemotePath]
-  } yield Follow(localPath, remotePath))
+  } yield Follow(localPath.mkString("/", "/", ""), remotePath))
 
   implicit val arbFollows: Arbitrary[Follows] = Arbitrary(resize(10, Gen.listOf(arbFollow.arbitrary).map(Follows)))
 

@@ -139,6 +139,20 @@ object Files {
     }
   }
 
+  def cp(src: String, dest: String, flush: Boolean): Option[Unit] = {
+    if (src == dest) Some(())
+    else {
+      if (badPath(src) || badPath(dest)) {
+        println(s"cp($src,$dest,flush=$flush)")
+        None
+      } else {
+        val res = exec(s"cp($src,$dest,flush=$flush)",
+          Request.Post(new URI(s"http://localhost:5001/api/v0/files/cp?arg=${urlEncode(src)}&arg=${urlEncode(dest)}&flush=$flush")))
+        res.string.map(_ => ())
+      }
+    }
+  }
+
   /*val data1: Array[Byte] = "hello world test1!".getBytes
   println(write("/test1", ByteVector(data1), 0, create = true, truncate = false, data1.length, flush = true))
   println(stat("/test1"))

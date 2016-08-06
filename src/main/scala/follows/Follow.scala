@@ -4,23 +4,25 @@ import cats.std.list._
 import cats.std.option._
 import cats.syntax.traverse._
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree
+import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree.SearchResult.Classification
 import com.googlecode.concurrenttrees.radix.node.concrete.SmartArrayBasedNodeFactory
 import follows.FollowSerialization._
 import follows.ParsePath._
 import prefixSubstitution.PatternTrie
+import scala.collection.convert.decorateAsScala._
 
-case class RemotePath(root: String /*IPNS address*/, path: List[String]) {
+case class RemotePath(root: String /*IPNS address*/ , path: List[String]) {
   override def toString = serializeRemotePath(this)
 }
-case class Follow(localPath: List[String], remotePath: RemotePath) {
+case class Follow(localPath: String, remotePath: RemotePath) {
   override def toString = serializeFollow(this)
 }
 case class Follows(follows: List[Follow]) {
   override def toString = serializeFollows(this)
 
-  lazy val trie: ConcurrentRadixTree[RemotePath] = {
-    val rules = new ConcurrentRadixTree[RemotePath](new SmartArrayBasedNodeFactory)
-    follows.foreach(follow => rules.put(follow.localPath.mkString("/"), follow.remotePath))
+  lazy val trie: ConcurrentRadixTree[Follow] = {
+    val rules = new ConcurrentRadixTree[Follow](new SmartArrayBasedNodeFactory)
+    follows.foreach(follow => rules.put(follow.localPath, follow))
     rules
   }
 
@@ -29,7 +31,15 @@ case class Follows(follows: List[Follow]) {
     for {
       rule <- PatternTrie.getPrefix(trie, path)
       remaining <- parsePath(path.drop(rule.pattern.length))
-    } yield RemotePath(rule.replacement.root, rule.replacement.path ++ remaining)
+    } yield RemotePath(rule.replacement.remotePath.root, rule.replacement.remotePath.path ++ remaining)
+  }
+
+  def followsUnder(_dir: String): List[String] = {
+    val dir =
+      if (_dir.last != '/') _dir + '/'
+      else _dir
+
+    trie.getKeysStartingWith(dir).asScala.map(_.toString.drop(dir.length)).filter(!_.contains("/")).toList
   }
 }
 
@@ -37,7 +47,7 @@ object FollowSerialization {
   val specialSymbols = List('/', '\\', ':', '*', '?', '"', '<', '>', '|')
 
   def serializeRemotePath(remotePath: RemotePath): String = remotePath.root + "/" + remotePath.path.mkString("/")
-  def serializeFollow(follow: Follow): String = "/" + follow.localPath.mkString("/") + ">" + serializeRemotePath(follow.remotePath)
+  def serializeFollow(follow: Follow): String = follow.localPath + ">" + serializeRemotePath(follow.remotePath)
   def serializeFollows(follows: Follows): String = follows.follows.map(serializeFollow).mkString("\n")
 
   def deserializeRemotePath(s: String): Option[RemotePath] = split(s.toList, '/').unwrap.map(_.mkString) match {
@@ -53,7 +63,7 @@ object FollowSerialization {
       for {
         localPath <- parsePath(local)
         remotePath <- deserializeRemotePath(remote)
-      } yield Follow(localPath, remotePath)
+      } yield Follow(localPath.mkString("/", "/", ""), remotePath)
     case _ => None
   }
 

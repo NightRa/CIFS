@@ -39,6 +39,7 @@ object Republisher {
   def publish(): Unit = {
     val hashToPublish = Files.stat("/").get.Hash
     if (lastPublishedHash != hashToPublish) {
+      println(s"Publishing! $hashToPublish")
       client.publish(hashToPublish)
       lastPublishTime = System.currentTimeMillis()
       lastPublishedHash = hashToPublish
