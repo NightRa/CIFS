@@ -21,17 +21,25 @@ object ParsePath {
       }
   }
 
-  def parsePath(path: String, debug: Boolean = true): Option[List[String]] = {
+  def parseRemotePath(path: String, debug: Boolean = true): Option[NonEmptyList[String]] = {
     if (path.contains("\\\\|:|\\*|\\?|\"|<|>|\\|")) return None // forbidden symbols in file names in windows
     val parts = split(path.toList, '/')
-    if (parts.head.nonEmpty) {
-      if (debug) println(s"parsePath($path): paths must start with /")
-      None
-    } else if (parts.tail.isEmpty) {
-      if (debug) println(s"parsePath($path): path must not be empty")
-      None
-    } else {
-      Some(parts.tail.filter(_ != Nil).map(_.mkString))
-    }
+    Some(NonEmptyList(parts.head.mkString, parts.tail.filter(_ != Nil).map(_.mkString)))
+  }
+
+  def parsePath(path: String, debug: Boolean = true): Option[List[String]] = {
+    for {
+      parts <- parseRemotePath(path, debug)
+      res <-
+      if (parts.head.nonEmpty) {
+        if (debug) println(s"parsePath($path): paths must start with /")
+        None
+      } else if (parts.tail.isEmpty) {
+        if (debug) println(s"parsePath($path): path must not be empty")
+        None
+      } else {
+        Some(parts.tail)
+      }
+    } yield res
   }
 }

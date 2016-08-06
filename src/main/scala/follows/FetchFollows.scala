@@ -9,4 +9,8 @@ object FetchFollows {
     val serializedFollows = Queries.catStr(pathOfFollows)
     serializedFollows.flatMap(deserializeFollows).getOrElse(Follows(Nil))
   }
+
+  def fetchFollowsIPNS(ipnsHash: String): Follows = {
+    fetchFollows("/ipns/" + ipnsHash)
+  }
 }

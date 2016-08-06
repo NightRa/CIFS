@@ -9,7 +9,7 @@ import follows.FollowSerialization._
 import follows.ParsePath._
 import prefixSubstitution.PatternTrie
 
-case class RemotePath(root: String, path: List[String]) {
+case class RemotePath(root: String /*IPNS address*/, path: List[String]) {
   override def toString = serializeRemotePath(this)
 }
 case class Follow(localPath: List[String], remotePath: RemotePath) {
