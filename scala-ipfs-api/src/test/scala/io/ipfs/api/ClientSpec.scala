@@ -1,3 +1,4 @@
+/*
 package io.ipfs.api
 
 import java.io.{ByteArrayOutputStream, InputStream}
@@ -80,3 +81,4 @@ object ClientSpec {
   }
 }
 
+*/

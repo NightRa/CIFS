@@ -4,6 +4,7 @@ import cats.data.{NonEmptyList, _}
 import cats.std.list._
 
 object ParsePath {
+  // TODO: these may stack-overflow. make them tail recursive.
   def intersperse[A](s: List[List[A]], c: A): List[A] = s match {
     case Nil => Nil
     case List(x) => x
@@ -21,12 +22,16 @@ object ParsePath {
   }
 
   def parsePath(path: String, debug: Boolean = true): Option[List[String]] = {
+    if (path.contains("\\\\|:|\\*|\\?|\"|<|>|\\|")) return None // forbidden symbols in file names in windows
     val parts = split(path.toList, '/')
     if (parts.head.nonEmpty) {
-      if(debug) println(s"parsePath($path): paths must start with /")
+      if (debug) println(s"parsePath($path): paths must start with /")
       None
     } else if (parts.tail.isEmpty) {
-      if(debug) println(s"parsePath($path): path must not be empty")
+      if (debug) println(s"parsePath($path): path must not be empty")
+      None
+    } else if (parts.tail.contains(Nil)) {
+      if (debug) println(s"parsePath($path): path must not contain empty segments (//a)")
       None
     } else {
       Some(parts.tail.map(_.mkString))
