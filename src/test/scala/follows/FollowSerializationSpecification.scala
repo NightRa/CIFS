@@ -20,7 +20,7 @@ object FollowSerializationSpecification extends Properties("FollowSerialization"
 
   implicit val arbRemotePath: Arbitrary[RemotePath] = Arbitrary(for {
     root <- arbitrary[String]
-    path <- path.arbitrary
+    path <- arbitrary[List[String]]
   } yield RemotePath(root, path))
 
   implicit val arbFollow: Arbitrary[Follow] = Arbitrary(for {

@@ -30,11 +30,8 @@ object ParsePath {
     } else if (parts.tail.isEmpty) {
       if (debug) println(s"parsePath($path): path must not be empty")
       None
-    } else if (parts.tail.contains(Nil)) {
-      if (debug) println(s"parsePath($path): path must not contain empty segments (//a)")
-      None
     } else {
-      Some(parts.tail.map(_.mkString))
+      Some(parts.tail.filter(_ != Nil).map(_.mkString))
     }
   }
 }
