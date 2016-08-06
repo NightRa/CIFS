@@ -1,13 +1,10 @@
 package follows
 
-import cats.std.list._
-import follows.ParsePath._
+import follows.FollowSerialization._
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen._
 import org.scalacheck.Prop.{forAll, _}
 import org.scalacheck.{Arbitrary, Gen, Properties}
-import serialization.FollowSerialization
-import Arbitrary.arbitrary
-import FollowSerialization._
 
 object FollowSerializationSpecification extends Properties("FollowSerialization") {
   implicit val chars: Arbitrary[Char] =

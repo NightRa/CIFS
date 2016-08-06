@@ -5,7 +5,6 @@ import follows.ParsePath._
 import org.scalacheck.Gen._
 import org.scalacheck.Prop.{forAll, _}
 import org.scalacheck.{Arbitrary, Properties}
-import serialization.FollowSerialization
 
 object ParsePathSpecification extends Properties("ParsePath") {
   implicit val chars: Arbitrary[Char] =
