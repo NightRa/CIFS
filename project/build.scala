@@ -32,7 +32,8 @@ object build extends Build {
       "org.http4s" %% "http4s-argonaut62" % "0.14.1a",*/
       "io.circe" %% "circe-core" % "0.4.1",
       "io.circe" %% "circe-generic" % "0.4.1",
-      "io.circe" %% "circe-parser" % "0.4.1"
+      "io.circe" %% "circe-parser" % "0.4.1",
+      "org.scalacheck" %% "scalacheck" % "1.13.2" % "test"
       // "io.ipfs" % "scala-ipfs-api_2.10" % "1.0.0-SNAPSHOT"
       // "com.googlecode.concurrent-trees" % "concurrent-trees" % "2.5.0",
       // "com.github.dokan-dev.dokan-java" % "dokan-java" % "0.1-SNAPSHOT",
@@ -41,6 +42,7 @@ object build extends Build {
       // "net.sf.trove4j" % "trove4j" % "2.0.2",
       // "commons-io" % "commons-io" % "1.4",
       // "org.slf4j" % "slf4j-api" % "1.6.14"
+
     ).map(_.exclude("org.scala-lang.modules","scala-xml_2.11")),
 
     // for @Lenses macro support

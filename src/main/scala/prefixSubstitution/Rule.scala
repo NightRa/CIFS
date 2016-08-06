@@ -33,7 +33,7 @@ object PatternTrie extends App {
 
   def applyRule(rule: Rule, s: String): String = {
     assert(s.startsWith(rule.pattern))
-    rule.replacement ++ s.drop(rule.pattern.length)
+    rule.replacement + s.drop(rule.pattern.length)
   }
 
   // TODO: This code is shit. Write the good impl, improve code.
