@@ -8,12 +8,12 @@ import com.googlecode.concurrenttrees.radix.node.concrete.SmartArrayBasedNodeFac
 
 import scala.collection.JavaConversions._
 
-case class Rule(pattern /*x_i*/ : String, replacement /*y_i*/ : String)
+case class Rule[A](pattern /*x_i*/ : String, replacement /*y_i*/ : A)
 
 object PatternTrie extends App {
-  def getPrefix(trie: ConcurrentRadixTree[String /*y_i*/ ], input: String): Option[Rule] = {
+  def getPrefix[A](trie: ConcurrentRadixTree[A /*y_i*/ ], input: String): Option[Rule[A]] = {
     val searchResult: SearchResult = trie.searchTree(input)
-    val value = searchResult.nodeFound.getValue.asInstanceOf[String]
+    val value = searchResult.nodeFound.getValue.asInstanceOf[A]
     val charsMatched = searchResult.charsMatched
     // Exact match - at the end of an edge, and also has a value - which means it's a complete rule and not just some common prefix of rules.
     if (
@@ -31,14 +31,14 @@ object PatternTrie extends App {
   def isFinal(trie: ConcurrentRadixTree[String /*y_i*/ ], input: String): Boolean =
     getPrefix(trie, input) == None
 
-  def applyRule(rule: Rule, s: String): String = {
+  def applyRule(rule: Rule[String], s: String): String = {
     assert(s.startsWith(rule.pattern))
     rule.replacement + s.drop(rule.pattern.length)
   }
 
   // TODO: This code is shit. Write the good impl, improve code.
   // returns the normal form.
-  def naivePreConsistency(_rules: List[Rule]): Option[ConcurrentRadixTree[String]] = {
+  def naivePreConsistency(_rules: List[Rule[String]]): Option[ConcurrentRadixTree[String]] = {
     val allRules: ConcurrentRadixTree[String] = new ConcurrentRadixTree[String](new SmartArrayBasedNodeFactory)
     val finalRules: ConcurrentRadixTree[String] = new ConcurrentRadixTree[String](new SmartArrayBasedNodeFactory)
     _rules.foreach {
@@ -49,8 +49,8 @@ object PatternTrie extends App {
     }
 
     while (!allRules.forall(rule => isFinal(allRules, rule.getValue))) {
-      val finallyApplicableRules: List[(Rule, Rule)] = allRules.toList.flatMap {
-        case KeyValuePair(pattern, replacement) => getPrefix(finalRules, replacement).map(applicableRule => (Rule(pattern, replacement), applicableRule))
+      val finallyApplicableRules: List[(Rule[String], Rule[String])] = allRules.toList.flatMap {
+        case KeyValuePair(pattern, replacement) => getPrefix(finalRules, replacement).map(applicableRule => (Rule[String](pattern, replacement), applicableRule))
       }
       if (finallyApplicableRules.isEmpty) return None
       //   applicant     applicable rule

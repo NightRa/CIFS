@@ -7,8 +7,14 @@ import org.scalacheck.Prop.{forAll, _}
 import org.scalacheck.{Arbitrary, Gen, Properties}
 
 object FollowSerializationSpecification extends Properties("FollowSerialization") {
+/*
   implicit val chars: Arbitrary[Char] =
     Arbitrary(oneOf((32 to 126).map(_.toChar).filter(!FollowSerialization.specialSymbols.contains(_))))
+*/
+
+  implicit val chars: Arbitrary[Char] =
+    Arbitrary(oneOf((47 to 57).map(_.toChar).filter(!FollowSerialization.specialSymbols.contains(_))))
+
 
   // segments must not be empty
   implicit val segment: Arbitrary[String] =
@@ -16,7 +22,7 @@ object FollowSerializationSpecification extends Properties("FollowSerialization"
 
   // paths must not be emtpy
   implicit val path: Arbitrary[List[String]] =
-    Arbitrary(Gen.nonEmptyListOf(segment.arbitrary))
+    Arbitrary(Gen.nonEmptyListOf(segment.arbitrary).map(_.filter(_.nonEmpty)))
 
   implicit val arbRemotePath: Arbitrary[RemotePath] = Arbitrary(for {
     root <- arbitrary[String]
