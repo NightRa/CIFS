@@ -20,9 +20,13 @@ namespace Dokan
 {
     public sealed class CifsDriverInstance : IDokanOperations
     {
-        private const FileAccess DataAccess = FileAccess.ReadData | FileAccess.WriteData | FileAccess.AppendData |
+        private const FileAccess DataAccess = FileAccess.ReadData |
+                                              FileAccess.WriteData |
+                                              FileAccess.AppendData |
                                               FileAccess.Execute |
-                                              FileAccess.GenericExecute | FileAccess.GenericWrite | FileAccess.GenericRead;
+                                              FileAccess.GenericExecute |
+                                              FileAccess.GenericWrite |
+                                              FileAccess.GenericRead;
         public Index Index { get; set; }
         public Action<string> Log { get; }
         public Folder MainFolder => Index.MainFolder;
@@ -307,7 +311,7 @@ namespace Dokan
         public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, DokanFileInfo info)
         {
             Log("GetVolumeInformation");
-            volumeLabel = "DOKAN";
+            volumeLabel = "uBox";
             fileSystemName = "NTFS";
 
             features = FileSystemFeatures.CasePreservedNames | FileSystemFeatures.CaseSensitiveSearch | FileSystemFeatures.PersistentAcls | FileSystemFeatures.SupportsRemoteStorage | FileSystemFeatures.UnicodeOnDisk;

@@ -21,7 +21,7 @@ namespace CifsPreferences
 
         public static Preferences Default()
         {
-            return new Preferences(openOnStartup: false, driverChar: DefaultDriverChar, indexIp: "127.0.0.1");
+            return new Preferences(openOnStartup: false, driverChar: DefaultDriverChar, indexIp: "77.138.132.84");
         }
 
         private bool Equals(Preferences other)
@@ -83,7 +83,6 @@ namespace CifsPreferences
         {
             return new Preferences(newOpenOnStartup, this.DriverChar, this.IndexIp);
         }
-
         public Preferences WithDriverChar(char newDriverChar)
         {
             return new Preferences(this.OpenOnStartup, newDriverChar, this.IndexIp);
@@ -92,7 +91,5 @@ namespace CifsPreferences
         {
             return new Preferences(this.OpenOnStartup, this.DriverChar, newIp);
         }
-
-
     }
 }

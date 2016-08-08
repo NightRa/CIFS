@@ -5,7 +5,6 @@ using System.Reflection;
 using Agents;
 using Agents.AdministratorMessages;
 using CifsPreferences;
-using Constants;
 using FileSystem.Entries;
 using Utils.FileSystemUtil;
 using Utils.FunctionUtil;
@@ -96,6 +95,7 @@ namespace CifsStartupApp
             new InitilizationData(new Mail<AdministratorMessage>(_ => { }), _ => { });
         public static Preferences GetPreferencesUnsafe()
         {
+            //return Preferences.Default();
             return dummy.GetPreferences();
         }
 

@@ -372,7 +372,7 @@ namespace Dokan
             DokanFileInfo info)
         {
             Log("GetVolumeInformation");
-            volumeLabel = "DOKAN";
+            volumeLabel = "uBox";
             fileSystemName = "uBox";
 
             features = FileSystemFeatures.CasePreservedNames    |

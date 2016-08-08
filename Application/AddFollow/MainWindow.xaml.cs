@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows;
+using CifsStartupApp;
 using Communication;
 using Communication.DokanMessaging.CloneOrFollow;
 using Constants;
@@ -11,11 +12,15 @@ namespace AddFollow
 {
     public partial class MainWindow : Window
     {
-        CommunicationAgent Communicator = new CommunicationAgent(Global.LocalHost, Global.TcpPort, _ => { });
+        public CommunicationAgent Communicator { get; }
+        public Action<string> Log { get; }
 
         public MainWindow()
         {
             InitializeComponent();
+            Log = _ => { };
+            var preferences = InitilizationData.GetPreferencesUnsafe();
+            this.Communicator = new CommunicationAgent(preferences.IndexIp, Global.TcpPort, Log);
         }
 
         protected override void OnSourceInitialized(EventArgs e)

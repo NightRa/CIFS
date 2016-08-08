@@ -38,6 +38,9 @@
     <Reference Include="Agents">
       <HintPath>..\Agents\bin\Debug\Agents.dll</HintPath>
     </Reference>
+    <Reference Include="CifsPreferences">
+      <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.dll</HintPath>
+    </Reference>
     <Reference Include="Communication">
       <HintPath>..\Communication\bin\Debug\Communication.dll</HintPath>
     </Reference>

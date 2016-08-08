@@ -37,6 +37,13 @@
     <ApplicationIcon>uBoxIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CifsPreferences, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\CifsPreferences\bin\Debug\CifsPreferences.dll</HintPath>
+    </Reference>
+    <Reference Include="CifsStartupApp">
+      <HintPath>..\CifsStartupApp\bin\Debug\CifsStartupApp.exe</HintPath>
+    </Reference>
     <Reference Include="Communication">
       <HintPath>..\Communication\bin\Debug\Communication.dll</HintPath>
     </Reference>

@@ -20,7 +20,7 @@ namespace CifsStartupApp
         public static void Loop(Index index, Preferences preferences, Mail<AdministratorMessage> @inbox, Action<string> log)
         {
             var dokanMail = new Mail<DokanSupervisorMessage>(log);
-            RunDokan.MountDokan(index, preferences.DriverChar, DokanOptions.FixedDrive, 5, inbox.Publish, dokanMail, log);
+            RunDokan.MountDokan(index, preferences, DokanOptions.FixedDrive, 5, inbox.Publish, dokanMail, log);
             while (true)
             {
                 var maybeMessage = inbox.TryGetMessage();
